@@ -16,13 +16,44 @@ namespace canvas
 		round,
 		bevel
 	};
-
+	// https://cairographics.org/manual/cairo-Image-Surfaces.html
 	class ImageData
 	{
 	public:
-		ImageData(const char* name) : m_Name(name) {}
+		ImageData(unsigned char* data, int width, int height) 
+			: m_Data(data), m_Width(width), m_Height(height) {}
+		ImageData(ImageData&& other)
+		{
+			m_Data = other.m_Data;
+			m_Width = other.m_Width;
+			m_Height = other.m_Height;
+
+			other.m_Data = nullptr;
+		}
+		~ImageData()
+		{
+			if (m_Data)
+			{
+				delete[] m_Data;
+				m_Data = nullptr;
+			}
+		}
+		unsigned char* data() const
+		{
+			return m_Data;
+		}
+		int width() const
+		{
+			return m_Width;
+		}
+		int height() const
+		{
+			return m_Height;
+		}
 	private:
-		std::string m_Name;
+		unsigned char* m_Data;
+		int m_Width;
+		int m_Height;
 	};
 	class Gradient
 	{
@@ -41,6 +72,7 @@ namespace canvas
 				m_Pattern = nullptr;
 			}
 		}
+
 		void addColorStop(double stop, const char* color)
 		{
 			if (strlen(color) > 7)
@@ -79,10 +111,69 @@ namespace canvas
 		}
 		~Canvas()
 		{
+			destroy();
+		}
+		void destroy()
+		{
 			cairo_destroy(cr);
 			cairo_surface_destroy(surface);
 			cr = nullptr;
 			surface = nullptr;
+		}
+		// https://cairographics.org/manual/cairo-Image-Surfaces.html
+		ImageData createImageData(const char* name, int width, int height)
+		{
+			unsigned char* data = new unsigned char[width * height * 4];
+			return std::move(ImageData(data, width, height));
+		}
+		void putImageData(ImageData& imgData, int x, int y, int dirtyX = 0, int dirtyY = 0, int dirtyWidth = 0, int dirtyHeight = 0)
+		{
+			cairo_surface_flush(surface);
+			unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+			int dest_width = cairo_image_surface_get_width(surface);
+			int dest_height = cairo_image_surface_get_height(surface);
+			if (dirtyWidth == 0)
+				dirtyWidth = dest_width;
+			if (dirtyHeight == 0)
+				dirtyHeight = dest_height;
+
+			unsigned char* src_pixel = imgData.data();
+			for (int ty = y, dirtyY2 = dirtyY; ty < imgData.height() && ty < dirtyHeight && dirtyY2 < dirtyHeight; ++ty, ++dirtyY2)
+			{
+				for (int tx = x, dirtyX2= dirtyX; tx < imgData.width() && tx < dirtyWidth && dirtyX2 < dirtyWidth; ++tx, ++dirtyX2)
+				{
+					int src_index = (ty * imgData.width() + tx) * 4;
+					int dest_index = (dirtyY2 * dest_width + dirtyX2) * 4;
+					dest_pixel[dest_index] = src_pixel[src_index];
+					dest_pixel[dest_index+1] = src_pixel[src_index+1];
+					dest_pixel[dest_index+2] = src_pixel[src_index+2];
+					dest_pixel[dest_index+3] = src_pixel[src_index+3];
+				}
+			}
+
+			cairo_surface_mark_dirty(surface);
+		}
+		ImageData getImageData(const char* name, int x, int y, int width, int height)
+		{
+			ImageData imgData = createImageData(name, width, height);
+			unsigned char* src_pixel = cairo_image_surface_get_data(surface);
+			int src_width = cairo_image_surface_get_width(surface);
+			int src_height = cairo_image_surface_get_height(surface);
+
+			unsigned char* dest_pixel = imgData.data();
+			for (int ty = y, dy = 0; ty < src_height && dy < height; ++ty, ++dy)
+			{
+				for (int tx = x, dx = 0; tx < src_width && dx < width; ++tx, ++dx)
+				{
+					int src_index = (ty * src_width + tx) * 4;
+					int dest_index = (dy * width + dx) * 4;
+					dest_pixel[dest_index] = src_pixel[src_index];
+					dest_pixel[dest_index + 1] = src_pixel[src_index + 1];
+					dest_pixel[dest_index + 2] = src_pixel[src_index + 2];
+					dest_pixel[dest_index + 3] = src_pixel[src_index + 3];
+				}
+			}
+			return std::move(imgData);
 		}
 		Gradient createLinearGradient(const char* name, double x0, double y0, double x1, double y1)
 		{

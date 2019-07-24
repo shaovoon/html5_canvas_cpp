@@ -46,6 +46,23 @@ int main()
 	ctx.set_fillStyle(grad);
 	ctx.fillRect(0.0, 0.0, 640.0, 480.0);
 
+	//ImageData imgData = ctx.createImageData("imgData", 100, 100);
+	ImageData imgData = ctx.getImageData("imgData", 10, 10, 100, 100);
+	/*
+	for (int y = 0; y < imgData.height(); ++y)
+	{
+		for (int x = 0; x < imgData.width(); ++x)
+		{
+			int index = (y * imgData.width() + x) * 4;
+			imgData.data()[index] = 0xff;
+			imgData.data()[index+1] = 0xff;
+			imgData.data()[index+2] = 0xff;
+			imgData.data()[index+3] = 0xff;
+		}
+
+	}
+	*/
+	ctx.putImageData(imgData, 0, 0, 200, 200);
 
 	ctx.savePng("c:\\temp\\image.png");
 
