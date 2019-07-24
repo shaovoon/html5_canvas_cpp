@@ -19,8 +19,8 @@ int main()
 	ctx.fillRect(0.0, 0.0, 500.0, 300.0);
 
 	ctx.set_fillStyle("#000000");
-	ctx.set_font("20px Arial");
-	ctx.fillText("Did you see this?", 10.0, 50.0);
+	ctx.set_font("36px Arial");
+	//ctx.fillText("Did you see this?", 10.0, 50.0);
 
 	ctx.beginPath();
 	ctx.set_lineWidth(10.0);
@@ -28,6 +28,15 @@ int main()
 	ctx.moveTo(20, 20);
 	ctx.lineTo(200, 20);
 	ctx.stroke();
+
+#ifdef __EMSCRIPTEN__
+	ctx.drawImage("yes_image", 10.0, 10.0);
+#else
+	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.png", 10.0, 10.0);
+#endif
+	ctx.set_lineWidth(2.0);
+	ctx.set_strokeStyle("#000000");
+	ctx.strokeText("Did you see this?", 50.0, 50.0);
 
 	ctx.savePng("c:\\temp\\image.png");
 

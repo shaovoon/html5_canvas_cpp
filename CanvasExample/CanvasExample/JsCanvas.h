@@ -85,6 +85,14 @@ namespace canvas
 				ctx.fillText( UTF8ToString($1), $2, $3);
 				}, m_Name.c_str(), text, x, y);
 		}
+		void strokeText(const char* text, double x, double y)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.strokeText( UTF8ToString($1), $2, $3);
+				}, m_Name.c_str(), text, x, y);
+		}
 		void moveTo(double x, double y)
 		{
 			EM_ASM_({
@@ -117,7 +125,25 @@ namespace canvas
 				ctx.closePath();
 				}, m_Name.c_str());
 		}
-		
+		void clip()
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.clip();
+				}, m_Name.c_str());
+		}
+		void arc(double xc, double yc,
+			double radius,
+			double angle1, double angle2)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.arc($1, $2, $3, $4, $5);
+				}, m_Name.c_str(), xc, yc, radius, angle1, angle2);
+		}
+
 		void stroke()
 		{
 			EM_ASM_({
@@ -176,6 +202,68 @@ namespace canvas
 
 				ctx.lineWidth = $1;
 				}, m_Name.c_str(), width);
+		}
+
+		void scale(double sx, double sy)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.scale($1, $2);
+				}, m_Name.c_str(), sx, sy);
+		}
+		void translate(double tx, double ty)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.translate($1, $2);
+				}, m_Name.c_str(), tx, ty);
+		}
+		void rotate(double angle)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.rotate($1);
+				}, m_Name.c_str(), angle);
+		}
+
+		void transform(double xx, double xy, double yx, double yy, double x0, double y0)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.transform($1, $2, $3, $4, $5, $6);
+				}, m_Name.c_str(), xx, xy, yx, yy, x0, y0);
+		}
+
+		void setTransform(double xx, double xy, double yx, double yy, double x0, double y0)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.setTransform($1, $2, $3, $4, $5, $6);
+				}, m_Name.c_str(), xx, xy, yx, yy, x0, y0);
+		}
+
+		void set_miterLimit(double limit)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.miterLimit = limit;
+				}, m_Name.c_str(), limit);
+		}
+
+		void drawImage(const char* image, double x, double y)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+                var img = document.getElementById(UTF8ToString($1));
+                ctx.drawImage(img, $2, $3);
+            }, m_Name.c_str(), image, x, y);
 		}
 
 		bool savePng(const char* file)

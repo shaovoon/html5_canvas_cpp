@@ -98,6 +98,12 @@ namespace canvas
 			cairo_move_to(cr, x, y);
 			cairo_show_text(cr, text);
 		}
+		void strokeText(const char* text, double x, double y)
+		{
+			cairo_move_to(cr, x, y);
+			cairo_text_path(cr, text);
+			cairo_stroke(cr);
+		}
 		void moveTo(double x, double y)
 		{
 			cairo_move_to(cr, x, y);
@@ -113,6 +119,16 @@ namespace canvas
 		void closePath()
 		{
 			cairo_close_path(cr);
+		}
+		void clip()
+		{
+			cairo_clip(cr);
+		}
+		void arc(double xc, double yc,
+			double radius,
+			double angle1, double angle2)
+		{
+			cairo_arc(cr, xc, yc, radius, angle1, angle2);
 		}
 		void stroke()
 		{
@@ -151,6 +167,51 @@ namespace canvas
 		void set_lineWidth(double width)
 		{
 			cairo_set_line_width(cr, width);
+		}
+
+		void scale(double sx, double sy)
+		{
+			cairo_scale(cr, sx, sy);
+		}
+		void translate(double tx, double ty)
+		{
+			cairo_translate(cr, tx, ty);
+		}
+		void rotate(double angle)
+		{
+			cairo_rotate(cr, angle);
+		}
+
+		void transform(double xx, double xy, double yx, double yy, double x0, double y0)
+		{
+			_cairo_matrix mat = {};
+			mat.xx = xx;
+			mat.xy = xy;
+			mat.yx = yx;
+			mat.yy = yy;
+			mat.x0 = x0;
+			mat.y0 = y0;
+
+			cairo_transform(cr, &mat);
+		}
+
+		void setTransform(double xx, double xy, double yx, double yy, double x0, double y0)
+		{
+			cairo_identity_matrix(cr);
+			transform(xx, xy, yx, yy, x0, y0);
+		}
+		void set_miterLimit(double limit)
+		{
+			cairo_set_miter_limit(cr, limit);
+		}
+
+		void drawImage(const char* image, double x, double y)
+		{
+			cairo_surface_t* surface = nullptr;
+			surface = cairo_image_surface_create_from_png(image);
+			cairo_set_source_surface(cr, surface, x, y);
+			cairo_paint(cr);
+			cairo_surface_destroy(surface);
 		}
 
 		bool savePng(const char* file)
