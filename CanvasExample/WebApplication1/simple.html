@@ -32,6 +32,7 @@
             var context = theCanvas.getContext("2d");
             Debugger.log("Drawing Canvas");
             function drawScreen() {
+                /*
                 //background
                 context.fillStyle = "#ffffaa";
                 context.fillRect(0, 0, 500, 300);
@@ -44,6 +45,7 @@
                 //box
                 context.strokeStyle = "#000000";
                 context.strokeRect(5, 5, 490, 290);
+                */
             }
             drawScreen();
         }
@@ -51,9 +53,10 @@
 </head>
 <body>
     <div style="position: absolute; top: 50px; left: 50px;">
-        <canvas id="canvas" width="500" height="300"> Your browser does not support HTML5 Canvas. </canvas>
+        <canvas id="canvas" width="640" height="480"> Your browser does not support HTML5 Canvas. </canvas>
     </div>
     <script async type="text/javascript" src="preamble.js"></script>
+    <script async type="text/javascript" src="jscanvas.js"></script>
     <script async type="text/javascript" src="simple.js"></script>
 </body>
 </html>

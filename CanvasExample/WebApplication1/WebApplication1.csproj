@@ -70,6 +70,7 @@
     <Content Include="canvas.html" />
     <Content Include="canvas_emscript.html" />
     <Content Include="helloworld.gif" />
+    <Content Include="jscanvas.js" />
     <Content Include="modernizr-canvas.js" />
     <Content Include="preamble.js" />
     <Content Include="simple.html" />

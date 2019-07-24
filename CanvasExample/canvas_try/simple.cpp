@@ -8,19 +8,20 @@ EM_JS(void, call_alert, (), {
 });
 */
 
-/*
+
 int main()
 {
     //call_alert();
 	
 	EM_ASM_({
-		alert('I received: ' + UTF8ToString($0));
+		alert('I received: ' + UTF8ToString($0) + UTF8ToString($0));
 	}, "Hello");
 	
     return 0;
 }
-*/
 
+
+/*
 int main()
 {
 	EM_ASM({
@@ -38,3 +39,4 @@ int main()
 	});
     return 0;
 }
+*/

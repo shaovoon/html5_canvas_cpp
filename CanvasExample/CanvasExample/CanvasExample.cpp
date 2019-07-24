@@ -4,7 +4,6 @@
 #include <iostream>
 
 #ifdef __EMSCRIPTEN__
-	#include <emscripten.h>
 	#include "JsCanvas.h"
 #else
 	#include "CppCanvas.h"
@@ -13,6 +12,10 @@
 
 int main()
 {
-    std::cout << "Hello World!\n";
+	Canvas ctx("canvas", 640, 480);
+	ctx.set_fillStyle("#ffffaa");
+	ctx.fillRect(0.0, 0.0, 500.0, 300.0);
+	ctx.savePng("c:\\temp\\image.png");
+    std::cout << "Done!\n";
 }
 

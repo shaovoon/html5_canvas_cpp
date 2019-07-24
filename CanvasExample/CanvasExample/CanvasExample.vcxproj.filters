@@ -23,8 +23,5 @@
     <ClInclude Include="CppCanvas.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JsCanvas.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>
