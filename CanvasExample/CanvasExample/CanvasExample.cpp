@@ -13,7 +13,7 @@
 int main()
 {
 	using namespace canvas;
-
+/*
 	Canvas ctx("canvas", 640, 480);
 	ctx.set_fillStyle("#ffffaa");
 	ctx.fillRect(0.0, 0.0, 500.0, 300.0);
@@ -37,6 +37,15 @@ int main()
 	ctx.set_lineWidth(2.0);
 	ctx.set_strokeStyle("#000000");
 	ctx.strokeText("Did you see this?", 50.0, 50.0);
+*/
+	Canvas ctx("canvas", 640, 480);
+	auto grad = ctx.createLinearGradient("grad", 0.0, 0.0, 640.0, 0.0);
+	//auto grad = ctx.createRadialGradient("grad", 75, 50, 5, 90, 60, 100);
+	grad.addColorStop(0.0, "#ff0000");
+	grad.addColorStop(1.0, "#0000ff");
+	ctx.set_fillStyle(grad);
+	ctx.fillRect(0.0, 0.0, 640.0, 480.0);
+
 
 	ctx.savePng("c:\\temp\\image.png");
 

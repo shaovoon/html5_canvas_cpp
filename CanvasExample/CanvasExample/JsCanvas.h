@@ -17,6 +17,29 @@ namespace canvas
 		round,
 		bevel
 	};
+	class Gradient
+	{
+	public:
+		Gradient(const char* name) : m_Name(name) {}
+		Gradient(Gradient&& other)
+		{
+			m_Name = std::move(other.m_Name);
+		}
+		void addColorStop(double stop, const char* color)
+		{
+			EM_ASM_({
+				var grad = get_gradient(UTF8ToString($0));
+
+				grad.addColorStop($1, UTF8ToString($2));
+				}, m_Name.c_str(), stop, color);
+		}
+		const char* getName() const
+		{
+			return m_Name.c_str();
+		}
+	private:
+		std::string m_Name;
+	};
 
 	class Canvas
 	{
@@ -26,6 +49,28 @@ namespace canvas
 			EM_ASM_({
 				add_canvas(UTF8ToString($0))
 				}, m_Name.c_str());
+		}
+		Gradient createLinearGradient(const char* name, double x0, double y0, double x1, double y1)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				var grad = ctx.createLinearGradient($1, $2, $3, $4);
+				add_gradient(UTF8ToString($5), grad);
+				}, m_Name.c_str(), x0, y0, x1, y1, name);
+			
+			return std::move(Gradient(name));
+		}
+		Gradient createRadialGradient(const char* name, double x0, double y0, double r0, double x1, double y1, double r1)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				var grad = ctx.createRadialGradient($1, $2, $3, $4, $5, $6);
+				add_gradient(UTF8ToString($7), grad);
+				}, m_Name.c_str(), x0, y0, r0, x1, y1, r1, name);
+			
+			return std::move(Gradient(name));
 		}
 
 		void fillRect(double x, double y, double width, double height)
@@ -61,6 +106,14 @@ namespace canvas
 				ctx.fillStyle = UTF8ToString($1);
 				}, m_Name.c_str(), value);
 		}
+		void set_fillStyle(const Gradient& grad)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.fillStyle = get_gradient(UTF8ToString($1));
+				}, m_Name.c_str(), grad.getName());
+		}
 		void set_strokeStyle(const char* value)
 		{
 			EM_ASM_({
@@ -68,6 +121,14 @@ namespace canvas
 
 				ctx.strokeStyle = UTF8ToString($1);
 				}, m_Name.c_str(), value);
+		}
+		void set_strokeStyle(const Gradient& grad)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.strokeStyle = get_gradient(UTF8ToString($1));
+				}, m_Name.c_str(), grad.getName());
 		}
 		void set_font(const char* value)
 		{

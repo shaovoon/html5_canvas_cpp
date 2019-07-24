@@ -17,6 +17,58 @@ namespace canvas
 		bevel
 	};
 
+	class ImageData
+	{
+	public:
+		ImageData(const char* name) : m_Name(name) {}
+	private:
+		std::string m_Name;
+	};
+	class Gradient
+	{
+	public:
+		Gradient(cairo_pattern_t* pattern) : m_Pattern(pattern) {}
+		Gradient(Gradient&& other)
+		{
+			m_Pattern = other.m_Pattern;
+			other.m_Pattern = nullptr;
+		}
+		~Gradient()
+		{
+			if (m_Pattern)
+			{
+				cairo_pattern_destroy(m_Pattern);
+				m_Pattern = nullptr;
+			}
+		}
+		void addColorStop(double stop, const char* color)
+		{
+			if (strlen(color) > 7)
+			{
+				unsigned long v = strtoul(color + 1, nullptr, 16);
+				double a = ((v & 0xff000000) >> 24) / 255.0;
+				double r = ((v & 0xff0000) >> 16) / 255.0;
+				double g = ((v & 0xff00) >> 8) / 255.0;
+				double b = (v & 0xff) / 255.0;
+				cairo_pattern_add_color_stop_rgba(m_Pattern, stop, r, g, b, a);
+			}
+			else
+			{
+				unsigned long v = strtoul(color + 1, nullptr, 16);
+				double r = ((v & 0xff0000) >> 16) / 255.0;
+				double g = ((v & 0xff00) >> 8) / 255.0;
+				double b = (v & 0xff) / 255.0;
+				cairo_pattern_add_color_stop_rgb(m_Pattern, stop, r, g, b);
+			}
+		}
+		cairo_pattern_t* getPattern() const
+		{
+			return m_Pattern;
+		}
+	private:
+		cairo_pattern_t* m_Pattern;
+	};
+
 	class Canvas
 	{
 	public:
@@ -31,6 +83,14 @@ namespace canvas
 			cairo_surface_destroy(surface);
 			cr = nullptr;
 			surface = nullptr;
+		}
+		Gradient createLinearGradient(const char* name, double x0, double y0, double x1, double y1)
+		{
+			return std::move(Gradient(cairo_pattern_create_linear(x0, y0, x1, y1)));
+		}
+		Gradient createRadialGradient(const char* name, double x0, double y0, double r0, double x1, double y1, double r1)
+		{
+			return std::move(Gradient(cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1)));
 		}
 		void fillRect(double x, double y, double width, double height)
 		{
@@ -52,19 +112,35 @@ namespace canvas
 		}
 		void set_fillStyle(const char* value)
 		{
-			unsigned long v = strtoul(value + 1, nullptr, 16);
-			double r = ((v & 0xff0000) >> 16) / 255.0;
-			double g = ((v & 0xff00) >> 8) / 255.0;
-			double b = (v & 0xff) / 255.0;
-			cairo_set_source_rgb(cr, r, g, b);
+			set_strokeStyle(value);
+		}
+		void set_fillStyle(const Gradient& grad)
+		{
+			set_strokeStyle(grad);
+		}
+		void set_strokeStyle(const Gradient& grad)
+		{
+			cairo_set_source(cr, grad.getPattern());
 		}
 		void set_strokeStyle(const char* value)
 		{
-			unsigned long v = strtoul(value + 1, nullptr, 16);
-			double r = ((v & 0xff0000) >> 16) / 255.0;
-			double g = ((v & 0xff00) >> 8) / 255.0;
-			double b = (v & 0xff) / 255.0;
-			cairo_set_source_rgb(cr, r, g, b);
+			if (strlen(value) > 7)
+			{
+				unsigned long v = strtoul(value + 1, nullptr, 16);
+				double a = ((v & 0xff000000) >> 24) / 255.0;
+				double r = ((v & 0xff0000) >> 16) / 255.0;
+				double g = ((v & 0xff00) >> 8) / 255.0;
+				double b = (v & 0xff) / 255.0;
+				cairo_set_source_rgba(cr, r, g, b, a);
+			}
+			else
+			{
+				unsigned long v = strtoul(value + 1, nullptr, 16);
+				double r = ((v & 0xff0000) >> 16) / 255.0;
+				double g = ((v & 0xff00) >> 8) / 255.0;
+				double b = (v & 0xff) / 255.0;
+				cairo_set_source_rgb(cr, r, g, b);
+			}
 		}
 		void set_font(const char* value)
 		{
