@@ -1,0 +1,60 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CH1EX3: Your First Canvas Application </title>
+    <script src="modernizr-canvas.js"></script>
+    <script type="text/javascript">
+        window.addEventListener("load", eventWindowLoaded, false);
+        var Debugger = function () { };
+        Debugger.log = function (message) {
+            try {
+                console.log(message);
+            }
+            catch (exception) {
+                return;
+            }
+        }
+
+        function eventWindowLoaded() {
+            canvasApp();
+        }
+
+        function canvasSupport() {
+            return Modernizr.canvas;
+        }
+
+        function canvasApp() {
+            if (!canvasSupport()) {
+                return;
+            }
+            var theCanvas = document.getElementById("canvas");
+            var context = theCanvas.getContext("2d");
+            Debugger.log("Drawing Canvas");
+            function drawScreen() {
+                //background
+                context.fillStyle = "#ffffaa";
+                context.fillRect(0, 0, 500, 300);
+                //text
+                context.fillStyle = "#000000";
+                context.font = "20px Sans-Serif";
+                context.textBaseline = "top";
+                context.fillText("Hello World!", 195, 80);
+
+                //box
+                context.strokeStyle = "#000000";
+                context.strokeRect(5, 5, 490, 290);
+            }
+            drawScreen();
+        }
+    </script>
+</head>
+<body>
+    <div style="position: absolute; top: 50px; left: 50px;">
+        <canvas id="canvas" width="500" height="300"> Your browser does not support HTML5 Canvas. </canvas>
+    </div>
+    <script async type="text/javascript" src="preamble.js"></script>
+    <script async type="text/javascript" src="simple.js"></script>
+</body>
+</html>
+
