@@ -62,7 +62,7 @@ int main()
 
 	}
 	*/
-	ctx.putImageData(imgData, 0, 0, 200, 200);
+	ctx.putImageData(imgData, 200, 200, 0, 0, 100, 100);
 
 	ctx.savePng("c:\\temp\\image.png");
 

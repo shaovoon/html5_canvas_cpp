@@ -17,6 +17,64 @@ namespace canvas
 		round,
 		bevel
 	};
+	unsigned int fromRGBA(unsigned char a, unsigned char r, unsigned char g, unsigned char b)
+	{
+		return (unsigned int)((a << 24) | (r << 16) | (g << 8) | b);
+	}
+	unsigned int fromRGB(unsigned char r, unsigned char g, unsigned char b)
+	{
+		return fromRGBA(0xff, r, g, b);
+	}
+	unsigned int fromRGBA(double a, double r, double g, double b)
+	{
+		unsigned int ia = a * 255.0;
+		unsigned int ir = r * 255.0;
+		unsigned int ig = g * 255.0;
+		unsigned int ib = b * 255.0;
+		ia &= 0xff;
+		ir &= 0xff;
+		ig &= 0xff;
+		ib &= 0xff;
+		return (unsigned int)((ia << 24) | (ir << 16) | (ig << 8) | ib);
+	}
+	unsigned int fromRGB(double a, double r, double g, double b)
+	{
+		return fromRGBA(1.0, r, g, b);
+	}
+
+	// https://cairographics.org/manual/cairo-Image-Surfaces.html
+	class ImageData
+	{
+	public:
+		ImageData(const char* name, int width, int height) 
+			: m_Name(name), m_Width(width), m_Height(height) {}
+		ImageData(ImageData&& other)
+		{
+			m_Name = std::move(other.m_Name);
+			m_Width = other.m_Width;
+			m_Height = other.m_Height;
+		}
+		~ImageData()
+		{
+		}
+		const char* name() const
+		{
+			return m_Name.c_str();
+		}
+		int width() const
+		{
+			return m_Width;
+		}
+		int height() const
+		{
+			return m_Height;
+		}
+	private:
+		std::string m_Name;
+		int m_Width;
+		int m_Height;
+	};
+
 	class Gradient
 	{
 	public:
@@ -50,6 +108,48 @@ namespace canvas
 				add_canvas(UTF8ToString($0))
 				}, m_Name.c_str());
 		}
+		ImageData createImageData(const char* name, int width, int height)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				var imgdata = ctx.createImageData($1, $2);
+				add_imgdata(UTF8ToString($3), imgdata);
+				}, m_Name.c_str(), width, height, name);
+			
+			return std::move(ImageData(name, width, height));
+		}
+		void putImageData(ImageData& imgData, int x, int y)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				var imgdata = get_imgdata(UTF8ToString($3));
+				ctx.putImageData(imgdata, $1, $2);
+				}, m_Name.c_str(), x, y, imgData.name());
+		}
+		void putImageData(ImageData& imgData, int x, int y, int dirtyX, int dirtyY, int dirtyWidth, int dirtyHeight)
+		{
+			printf("imgData.name(): %s\n", imgData.name());
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				var imgdata = get_imgdata(UTF8ToString($7));
+				ctx.putImageData(imgdata, $1, $2, $3, $4, $5, $6);
+				}, m_Name.c_str(), x, y, dirtyX, dirtyY, dirtyWidth, dirtyHeight, imgData.name());
+		}
+		ImageData getImageData(const char* name, int x, int y, int width, int height)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				var imgdata = ctx.getImageData($1, $2, $3, $4);
+				add_imgdata(UTF8ToString($5), imgdata);
+				}, m_Name.c_str(), x, y, width, height, name);
+			
+			return std::move(ImageData(name, width, height));
+		}
+
 		Gradient createLinearGradient(const char* name, double x0, double y0, double x1, double y1)
 		{
 			EM_ASM_({
@@ -106,6 +206,16 @@ namespace canvas
 				ctx.fillStyle = UTF8ToString($1);
 				}, m_Name.c_str(), value);
 		}
+		void set_fillStyle(unsigned int value)
+		{
+			char buf[20];
+			sprintf(buf, "#%08x", value);
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.fillStyle = UTF8ToString($1);
+				}, m_Name.c_str(), buf);
+		}
 		void set_fillStyle(const Gradient& grad)
 		{
 			EM_ASM_({
@@ -121,6 +231,16 @@ namespace canvas
 
 				ctx.strokeStyle = UTF8ToString($1);
 				}, m_Name.c_str(), value);
+		}
+		void set_strokeStyle(unsigned int value)
+		{
+			char buf[20];
+			sprintf(buf, "#%08x", value);
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.strokeStyle = UTF8ToString($1);
+				}, m_Name.c_str(), buf);
 		}
 		void set_strokeStyle(const Gradient& grad)
 		{

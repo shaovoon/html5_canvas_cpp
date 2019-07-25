@@ -16,6 +16,31 @@ namespace canvas
 		round,
 		bevel
 	};
+
+	unsigned int fromRGBA(unsigned char a, unsigned char r, unsigned char g, unsigned char b)
+	{
+		return (unsigned int)((a << 24) | (r << 16) | (g << 8) | b);
+	}
+	unsigned int fromRGB(unsigned char r, unsigned char g, unsigned char b)
+	{
+		return fromRGBA(0xff, r, g, b);
+	}
+	unsigned int fromRGBA(double a, double r, double g, double b)
+	{
+		unsigned int ia = a * 255.0;
+		unsigned int ir = r * 255.0;
+		unsigned int ig = g * 255.0;
+		unsigned int ib = b * 255.0;
+		ia &= 0xff;
+		ir &= 0xff;
+		ig &= 0xff;
+		ib &= 0xff;
+		return (unsigned int)((ia << 24) | (ir << 16) | (ig << 8) | ib);
+	}
+	unsigned int fromRGB(double a, double r, double g, double b)
+	{
+		return fromRGBA(1.0, r, g, b);
+	}
 	// https://cairographics.org/manual/cairo-Image-Surfaces.html
 	class ImageData
 	{
@@ -126,21 +151,21 @@ namespace canvas
 			unsigned char* data = new unsigned char[width * height * 4];
 			return std::move(ImageData(data, width, height));
 		}
-		void putImageData(ImageData& imgData, int x, int y, int dirtyX = 0, int dirtyY = 0, int dirtyWidth = 0, int dirtyHeight = 0)
+		void putImageData(ImageData& imgData, int x, int y, int srcX = 0, int srcY = 0, int srcWidth = 0, int srcHeight = 0)
 		{
 			cairo_surface_flush(surface);
 			unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
 			int dest_width = cairo_image_surface_get_width(surface);
 			int dest_height = cairo_image_surface_get_height(surface);
-			if (dirtyWidth == 0)
-				dirtyWidth = dest_width;
-			if (dirtyHeight == 0)
-				dirtyHeight = dest_height;
+			if (srcWidth == 0)
+				srcWidth = imgData.width();
+			if (srcHeight == 0)
+				srcHeight = imgData.height();
 
 			unsigned char* src_pixel = imgData.data();
-			for (int ty = y, dirtyY2 = dirtyY; ty < imgData.height() && ty < dirtyHeight && dirtyY2 < dirtyHeight; ++ty, ++dirtyY2)
+			for (int ty = srcY, dirtyY2 = y; ty < imgData.height() && ty < srcHeight && dirtyY2 < dest_height; ++ty, ++dirtyY2)
 			{
-				for (int tx = x, dirtyX2= dirtyX; tx < imgData.width() && tx < dirtyWidth && dirtyX2 < dirtyWidth; ++tx, ++dirtyX2)
+				for (int tx = srcX, dirtyX2= x; tx < imgData.width() && tx < srcWidth && dirtyX2 < dest_width; ++tx, ++dirtyX2)
 				{
 					int src_index = (ty * imgData.width() + tx) * 4;
 					int dest_index = (dirtyY2 * dest_width + dirtyX2) * 4;
@@ -205,6 +230,10 @@ namespace canvas
 		{
 			set_strokeStyle(value);
 		}
+		void set_fillStyle(unsigned int value)
+		{
+			set_strokeStyle(value);
+		}
 		void set_fillStyle(const Gradient& grad)
 		{
 			set_strokeStyle(grad);
@@ -232,6 +261,14 @@ namespace canvas
 				double b = (v & 0xff) / 255.0;
 				cairo_set_source_rgb(cr, r, g, b);
 			}
+		}
+		void set_strokeStyle(unsigned int value)
+		{
+			double a = ((value & 0xff000000) >> 24) / 255.0;
+			double r = ((value & 0xff0000) >> 16) / 255.0;
+			double g = ((value & 0xff00) >> 8) / 255.0;
+			double b = (value & 0xff) / 255.0;
+			cairo_set_source_rgba(cr, r, g, b, a);
 		}
 		void set_font(const char* value)
 		{
