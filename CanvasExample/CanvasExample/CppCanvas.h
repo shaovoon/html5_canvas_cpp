@@ -1,5 +1,7 @@
 #pragma once
 #include <cairo.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 namespace canvas
 {
@@ -408,7 +410,7 @@ namespace canvas
 		{
 			cairo_set_miter_limit(cr, limit);
 		}
-
+		/*
 		void drawImage(const char* image, double x, double y)
 		{
 			cairo_surface_t* surface = nullptr;
@@ -416,6 +418,38 @@ namespace canvas
 			cairo_set_source_surface(cr, surface, x, y);
 			cairo_paint(cr);
 			cairo_surface_destroy(surface);
+		}
+		*/
+		// https://github.com/aleksaro/gloom/wiki/Loading-images-with-stb
+		void drawImage(const char* image_file, double x0, double y0)
+		{
+			int width, height, channels;
+			//stbi_set_flip_vertically_on_load(true);
+			unsigned char* image = stbi_load(image_file,
+				&width,
+				&height,
+				&channels,
+				STBI_rgb);
+
+			ImageData imgData = createImageData("imgData", width, height);
+			unsigned char* dest_pixel = imgData.data();
+			for (int y = 0; y < imgData.height(); ++y)
+			{
+				for (int x = 0; x < imgData.width(); ++x)
+				{
+					int index = (y * imgData.width() + x) * 4;
+					int src_index = (y * imgData.width() + x) * 3;
+					dest_pixel[index] = image[src_index + 2];
+					dest_pixel[index + 1] = image[src_index + 1];
+					dest_pixel[index + 2] = image[src_index + 0];
+					dest_pixel[index + 3] = 0xff;
+				}
+
+			}
+
+			putImageData(imgData, x0, y0, 0, 0, width, height);
+
+			stbi_image_free((void*)image);
 		}
 
 		bool savePng(const char* file)

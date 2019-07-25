@@ -64,6 +64,13 @@ int main()
 	*/
 	ctx.putImageData(imgData, 200, 200, 0, 0, 100, 100);
 
+#ifdef __EMSCRIPTEN__
+	ctx.drawImage("yes_image", 10.0, 10.0);
+#else
+	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
+#endif
+
+
 	ctx.savePng("c:\\temp\\image.png");
 
 
