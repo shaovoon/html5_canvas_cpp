@@ -451,6 +451,50 @@ namespace canvas
 
 			stbi_image_free((void*)image);
 		}
+		// https://www.geeksforgeeks.org/cubic-bezier-curve-implementation-in-c/
+		// https://pomax.github.io/bezierinfo/
+		void bezierCurveTo(double cp1x, double cp1y, double cp2x, double cp2y, double endx, double endy)
+		{
+			double x[4];
+			double y[4];
+			cairo_get_current_point(cr, &x[0], &y[0]);
+			x[1] = cp1x;
+			x[2] = cp2x;
+			x[3] = endx;
+			y[1] = cp1y;
+			y[2] = cp2y;
+			y[3] = endy;
+			double xu = 0.0, yu = 0.0, u = 0.0;
+			int i = 0;
+			for (u = 0.0; u <= 1.0; u += 0.0001)
+			{
+				xu = pow(1 - u, 3) * x[0] + 3 * u * pow(1 - u, 2) * x[1] + 3 * pow(u, 2) * (1 - u) * x[2]
+					+ pow(u, 3) * x[3];
+				yu = pow(1 - u, 3) * y[0] + 3 * u * pow(1 - u, 2) * y[1] + 3 * pow(u, 2) * (1 - u) * y[2]
+					+ pow(u, 3) * y[3];
+
+				cairo_line_to(cr, xu, yu);
+			}
+		}
+		void quadraticCurveTo(double cpx, double cpy, double endx, double endy)
+		{
+			double x[3];
+			double y[3];
+			cairo_get_current_point(cr, &x[0], &y[0]);
+			x[1] = cpx;
+			x[2] = endx;
+			y[1] = cpy;
+			y[2] = endy;
+			double xu = 0.0, yu = 0.0, u = 0.0;
+			int i = 0;
+			for (u = 0.0; u <= 1.0; u += 0.0001)
+			{
+				xu = pow(1 - u, 2) * x[0] + 2 * (1 - u) * u * x[1] + (u * u) * x[2];
+				yu = pow(1 - u, 2) * y[0] + 2 * (1 - u) * u * y[1] + (u * u) * y[2];
+
+				cairo_line_to(cr, xu, yu);
+			}
+		}
 
 		bool savePng(const char* file)
 		{

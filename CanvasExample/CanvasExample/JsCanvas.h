@@ -447,6 +447,23 @@ namespace canvas
             }, m_Name.c_str(), image, x, y);
 		}
 
+		void bezierCurveTo(double cp1x, double cp1y, double cp2x, double cp2y, double endx, double endy)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+                ctx.bezierCurveTo($1, $2, $3, $4, $5, $6);
+            }, m_Name.c_str(), cp1x, cp1y, cp2x, cp2y, endx, endy);
+		}
+		void quadraticCurveTo(double cpx, double cpy, double endx, double endy)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+                ctx.quadraticCurveTo($1, $2, $3, $4);
+            }, m_Name.c_str(), cpx, cpy, endx, endy);
+		}
+
 		bool savePng(const char* file)
 		{
 			// do nothing here.

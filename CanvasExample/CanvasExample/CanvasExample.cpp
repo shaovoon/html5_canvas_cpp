@@ -64,12 +64,13 @@ int main()
 	*/
 	ctx.putImageData(imgData, 200, 200, 0, 0, 100, 100);
 
-#ifdef __EMSCRIPTEN__
-	ctx.drawImage("yes_image", 10.0, 10.0);
-#else
-	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
-#endif
+	ctx.set_strokeStyle("#000000");
 
+	ctx.beginPath();
+	ctx.moveTo(20, 20);
+	//ctx.bezierCurveTo(20, 100, 200, 100, 200, 20);
+	ctx.quadraticCurveTo(20, 100, 200, 20);
+	ctx.stroke();
 
 	ctx.savePng("c:\\temp\\image.png");
 
