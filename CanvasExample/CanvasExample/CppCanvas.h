@@ -5,13 +5,13 @@
 
 namespace canvas
 {
-
 	enum class LineCap
 	{
 		butt,
 		round,
 		square
 	};
+
 	enum class LineJoin
 	{
 		miter,
@@ -23,10 +23,12 @@ namespace canvas
 	{
 		return (unsigned int)((a << 24) | (r << 16) | (g << 8) | b);
 	}
+
 	unsigned int fromRGB(unsigned char r, unsigned char g, unsigned char b)
 	{
 		return fromRGBA(0xff, r, g, b);
 	}
+
 	unsigned int fromRGBA(double a, double r, double g, double b)
 	{
 		unsigned int ia = a * 255.0;
@@ -39,6 +41,7 @@ namespace canvas
 		ib &= 0xff;
 		return (unsigned int)((ia << 24) | (ir << 16) | (ig << 8) | ib);
 	}
+
 	unsigned int fromRGB(double a, double r, double g, double b)
 	{
 		return fromRGBA(1.0, r, g, b);
@@ -91,6 +94,7 @@ namespace canvas
 			m_Pattern = other.m_Pattern;
 			other.m_Pattern = nullptr;
 		}
+
 		~Gradient()
 		{
 			if (m_Pattern)
@@ -136,10 +140,12 @@ namespace canvas
 			surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 			cr = cairo_create(surface);
 		}
+
 		~Canvas()
 		{
 			destroy();
 		}
+
 		void destroy()
 		{
 			cairo_destroy(cr);
@@ -147,103 +153,48 @@ namespace canvas
 			cr = nullptr;
 			surface = nullptr;
 		}
-		// https://cairographics.org/manual/cairo-Image-Surfaces.html
-		ImageData createImageData(const char* name, int width, int height)
-		{
-			unsigned char* data = new unsigned char[width * height * 4];
-			return std::move(ImageData(data, width, height));
-		}
-		void putImageData(ImageData& imgData, int x, int y, int srcX = 0, int srcY = 0, int srcWidth = 0, int srcHeight = 0)
-		{
-			cairo_surface_flush(surface);
-			unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
-			int dest_width = cairo_image_surface_get_width(surface);
-			int dest_height = cairo_image_surface_get_height(surface);
-			if (srcWidth == 0)
-				srcWidth = imgData.width();
-			if (srcHeight == 0)
-				srcHeight = imgData.height();
 
-			unsigned char* src_pixel = imgData.data();
-			for (int ty = srcY, dirtyY2 = y; ty < imgData.height() && ty < srcHeight && dirtyY2 < dest_height; ++ty, ++dirtyY2)
-			{
-				for (int tx = srcX, dirtyX2= x; tx < imgData.width() && tx < srcWidth && dirtyX2 < dest_width; ++tx, ++dirtyX2)
-				{
-					int src_index = (ty * imgData.width() + tx) * 4;
-					int dest_index = (dirtyY2 * dest_width + dirtyX2) * 4;
-					dest_pixel[dest_index] = src_pixel[src_index];
-					dest_pixel[dest_index+1] = src_pixel[src_index+1];
-					dest_pixel[dest_index+2] = src_pixel[src_index+2];
-					dest_pixel[dest_index+3] = src_pixel[src_index+3];
-				}
-			}
-
-			cairo_surface_mark_dirty(surface);
-		}
-		ImageData getImageData(const char* name, int x, int y, int width, int height)
-		{
-			ImageData imgData = createImageData(name, width, height);
-			unsigned char* src_pixel = cairo_image_surface_get_data(surface);
-			int src_width = cairo_image_surface_get_width(surface);
-			int src_height = cairo_image_surface_get_height(surface);
-
-			unsigned char* dest_pixel = imgData.data();
-			for (int ty = y, dy = 0; ty < src_height && dy < height; ++ty, ++dy)
-			{
-				for (int tx = x, dx = 0; tx < src_width && dx < width; ++tx, ++dx)
-				{
-					int src_index = (ty * src_width + tx) * 4;
-					int dest_index = (dy * width + dx) * 4;
-					dest_pixel[dest_index] = src_pixel[src_index];
-					dest_pixel[dest_index + 1] = src_pixel[src_index + 1];
-					dest_pixel[dest_index + 2] = src_pixel[src_index + 2];
-					dest_pixel[dest_index + 3] = src_pixel[src_index + 3];
-				}
-			}
-			return std::move(imgData);
-		}
-		Gradient createLinearGradient(const char* name, double x0, double y0, double x1, double y1)
-		{
-			return std::move(Gradient(cairo_pattern_create_linear(x0, y0, x1, y1)));
-		}
-		Gradient createRadialGradient(const char* name, double x0, double y0, double r0, double x1, double y1, double r1)
-		{
-			return std::move(Gradient(cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1)));
-		}
 		void fillRect(double x, double y, double width, double height)
 		{
 			cairo_rectangle(cr, x, y, width, height);
 			cairo_stroke_preserve(cr);
 			cairo_fill(cr);
 		}
+
 		void clearRect(double x, double y, double width, double height) // TODO: to be implemented
 		{
 			cairo_rectangle(cr, x, y, width, height);
 			cairo_stroke_preserve(cr);
 			cairo_fill(cr);
 		}
+
 		void strokeRect(double x, double y, double width, double height)
 		{
 			cairo_rectangle(cr, x, y, width, height);
 			cairo_stroke_preserve(cr);
 			cairo_stroke(cr);
 		}
+
 		void set_fillStyle(const char* value)
 		{
 			set_strokeStyle(value);
 		}
+
 		void set_fillStyle(unsigned int value)
 		{
 			set_strokeStyle(value);
 		}
+
 		void set_fillStyle(const Gradient& grad)
 		{
 			set_strokeStyle(grad);
 		}
+
 		void set_strokeStyle(const Gradient& grad)
 		{
 			cairo_set_source(cr, grad.getPattern());
 		}
+
 		void set_strokeStyle(const char* value)
 		{
 			if (strlen(value) > 7)
@@ -264,6 +215,7 @@ namespace canvas
 				cairo_set_source_rgb(cr, r, g, b);
 			}
 		}
+
 		void set_strokeStyle(unsigned int value)
 		{
 			double a = ((value & 0xff000000) >> 24) / 255.0;
@@ -272,6 +224,7 @@ namespace canvas
 			double b = (value & 0xff) / 255.0;
 			cairo_set_source_rgba(cr, r, g, b, a);
 		}
+
 		void set_font(const char* value)
 		{
 			std::string v = value;
@@ -299,51 +252,108 @@ namespace canvas
 				cairo_set_font_size(cr, (double)font_size);
 			}
 		}
+
 		void fillText(const char* text, double x, double y)
 		{
 			cairo_move_to(cr, x, y);
 			cairo_show_text(cr, text);
 		}
+
 		void strokeText(const char* text, double x, double y)
 		{
 			cairo_move_to(cr, x, y);
 			cairo_text_path(cr, text);
 			cairo_stroke(cr);
 		}
-		void moveTo(double x, double y)
-		{
-			cairo_move_to(cr, x, y);
-		}
-		void lineTo(double x, double y)
-		{
-			cairo_line_to(cr, x, y);
-		}
+
 		void beginPath()
 		{
 			cairo_new_path(cr);
 		}
+
 		void closePath()
 		{
 			cairo_close_path(cr);
 		}
+
+		void moveTo(double x, double y)
+		{
+			cairo_move_to(cr, x, y);
+		}
+
+		void lineTo(double x, double y)
+		{
+			cairo_line_to(cr, x, y);
+		}
+
+		// https://www.geeksforgeeks.org/cubic-bezier-curve-implementation-in-c/
+		// https://pomax.github.io/bezierinfo/
+		void bezierCurveTo(double cp1x, double cp1y, double cp2x, double cp2y, double endx, double endy)
+		{
+			double x[4];
+			double y[4];
+			cairo_get_current_point(cr, &x[0], &y[0]);
+			x[1] = cp1x;
+			x[2] = cp2x;
+			x[3] = endx;
+			y[1] = cp1y;
+			y[2] = cp2y;
+			y[3] = endy;
+			double xu = 0.0, yu = 0.0, u = 0.0;
+			int i = 0;
+			for (u = 0.0; u <= 1.0; u += 0.0001)
+			{
+				xu = pow(1 - u, 3) * x[0] + 3 * u * pow(1 - u, 2) * x[1] + 3 * pow(u, 2) * (1 - u) * x[2]
+					+ pow(u, 3) * x[3];
+				yu = pow(1 - u, 3) * y[0] + 3 * u * pow(1 - u, 2) * y[1] + 3 * pow(u, 2) * (1 - u) * y[2]
+					+ pow(u, 3) * y[3];
+
+				cairo_line_to(cr, xu, yu);
+			}
+		}
+
+		void quadraticCurveTo(double cpx, double cpy, double endx, double endy)
+		{
+			double x[3];
+			double y[3];
+			cairo_get_current_point(cr, &x[0], &y[0]);
+			x[1] = cpx;
+			x[2] = endx;
+			y[1] = cpy;
+			y[2] = endy;
+			double xu = 0.0, yu = 0.0, u = 0.0;
+			int i = 0;
+			for (u = 0.0; u <= 1.0; u += 0.0001)
+			{
+				xu = pow(1 - u, 2) * x[0] + 2 * (1 - u) * u * x[1] + (u * u) * x[2];
+				yu = pow(1 - u, 2) * y[0] + 2 * (1 - u) * u * y[1] + (u * u) * y[2];
+
+				cairo_line_to(cr, xu, yu);
+			}
+		}
+
 		void clip()
 		{
 			cairo_clip(cr);
 		}
+
 		void arc(double xc, double yc,
 			double radius,
 			double angle1, double angle2)
 		{
 			cairo_arc(cr, xc, yc, radius, angle1, angle2);
 		}
+
 		void stroke()
 		{
 			cairo_stroke(cr);
 		}
+
 		void fill()
 		{
 			cairo_fill(cr);
 		}
+
 		void set_lineCap(LineCap cap)
 		{
 			cairo_line_cap_t cairo_cap = CAIRO_LINE_CAP_BUTT;
@@ -379,10 +389,12 @@ namespace canvas
 		{
 			cairo_scale(cr, sx, sy);
 		}
+
 		void translate(double tx, double ty)
 		{
 			cairo_translate(cr, tx, ty);
 		}
+
 		void rotate(double angle)
 		{
 			cairo_rotate(cr, angle);
@@ -406,20 +418,12 @@ namespace canvas
 			cairo_identity_matrix(cr);
 			transform(xx, xy, yx, yy, x0, y0);
 		}
+
 		void set_miterLimit(double limit)
 		{
 			cairo_set_miter_limit(cr, limit);
 		}
-		/*
-		void drawImage(const char* image, double x, double y)
-		{
-			cairo_surface_t* surface = nullptr;
-			surface = cairo_image_surface_create_from_png(image);
-			cairo_set_source_surface(cr, surface, x, y);
-			cairo_paint(cr);
-			cairo_surface_destroy(surface);
-		}
-		*/
+
 		// https://github.com/aleksaro/gloom/wiki/Loading-images-with-stb
 		void drawImage(const char* image_file, double x0, double y0)
 		{
@@ -451,49 +455,73 @@ namespace canvas
 
 			stbi_image_free((void*)image);
 		}
-		// https://www.geeksforgeeks.org/cubic-bezier-curve-implementation-in-c/
-		// https://pomax.github.io/bezierinfo/
-		void bezierCurveTo(double cp1x, double cp1y, double cp2x, double cp2y, double endx, double endy)
-		{
-			double x[4];
-			double y[4];
-			cairo_get_current_point(cr, &x[0], &y[0]);
-			x[1] = cp1x;
-			x[2] = cp2x;
-			x[3] = endx;
-			y[1] = cp1y;
-			y[2] = cp2y;
-			y[3] = endy;
-			double xu = 0.0, yu = 0.0, u = 0.0;
-			int i = 0;
-			for (u = 0.0; u <= 1.0; u += 0.0001)
-			{
-				xu = pow(1 - u, 3) * x[0] + 3 * u * pow(1 - u, 2) * x[1] + 3 * pow(u, 2) * (1 - u) * x[2]
-					+ pow(u, 3) * x[3];
-				yu = pow(1 - u, 3) * y[0] + 3 * u * pow(1 - u, 2) * y[1] + 3 * pow(u, 2) * (1 - u) * y[2]
-					+ pow(u, 3) * y[3];
 
-				cairo_line_to(cr, xu, yu);
-			}
+		Gradient createLinearGradient(const char* name, double x0, double y0, double x1, double y1)
+		{
+			return std::move(Gradient(cairo_pattern_create_linear(x0, y0, x1, y1)));
 		}
-		void quadraticCurveTo(double cpx, double cpy, double endx, double endy)
-		{
-			double x[3];
-			double y[3];
-			cairo_get_current_point(cr, &x[0], &y[0]);
-			x[1] = cpx;
-			x[2] = endx;
-			y[1] = cpy;
-			y[2] = endy;
-			double xu = 0.0, yu = 0.0, u = 0.0;
-			int i = 0;
-			for (u = 0.0; u <= 1.0; u += 0.0001)
-			{
-				xu = pow(1 - u, 2) * x[0] + 2 * (1 - u) * u * x[1] + (u * u) * x[2];
-				yu = pow(1 - u, 2) * y[0] + 2 * (1 - u) * u * y[1] + (u * u) * y[2];
 
-				cairo_line_to(cr, xu, yu);
+		Gradient createRadialGradient(const char* name, double x0, double y0, double r0, double x1, double y1, double r1)
+		{
+			return std::move(Gradient(cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1)));
+		}
+
+		// https://cairographics.org/manual/cairo-Image-Surfaces.html
+		ImageData createImageData(const char* name, int width, int height)
+		{
+			unsigned char* data = new unsigned char[width * height * 4];
+			return std::move(ImageData(data, width, height));
+		}
+
+		void putImageData(ImageData& imgData, int x, int y, int srcX = 0, int srcY = 0, int srcWidth = 0, int srcHeight = 0)
+		{
+			cairo_surface_flush(surface);
+			unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+			int dest_width = cairo_image_surface_get_width(surface);
+			int dest_height = cairo_image_surface_get_height(surface);
+			if (srcWidth == 0)
+				srcWidth = imgData.width();
+			if (srcHeight == 0)
+				srcHeight = imgData.height();
+
+			unsigned char* src_pixel = imgData.data();
+			for (int ty = srcY, dirtyY2 = y; ty < imgData.height() && ty < srcHeight && dirtyY2 < dest_height; ++ty, ++dirtyY2)
+			{
+				for (int tx = srcX, dirtyX2 = x; tx < imgData.width() && tx < srcWidth && dirtyX2 < dest_width; ++tx, ++dirtyX2)
+				{
+					int src_index = (ty * imgData.width() + tx) * 4;
+					int dest_index = (dirtyY2 * dest_width + dirtyX2) * 4;
+					dest_pixel[dest_index] = src_pixel[src_index];
+					dest_pixel[dest_index + 1] = src_pixel[src_index + 1];
+					dest_pixel[dest_index + 2] = src_pixel[src_index + 2];
+					dest_pixel[dest_index + 3] = src_pixel[src_index + 3];
+				}
 			}
+
+			cairo_surface_mark_dirty(surface);
+		}
+
+		ImageData getImageData(const char* name, int x, int y, int width, int height)
+		{
+			ImageData imgData = createImageData(name, width, height);
+			unsigned char* src_pixel = cairo_image_surface_get_data(surface);
+			int src_width = cairo_image_surface_get_width(surface);
+			int src_height = cairo_image_surface_get_height(surface);
+
+			unsigned char* dest_pixel = imgData.data();
+			for (int ty = y, dy = 0; ty < src_height && dy < height; ++ty, ++dy)
+			{
+				for (int tx = x, dx = 0; tx < src_width && dx < width; ++tx, ++dx)
+				{
+					int src_index = (ty * src_width + tx) * 4;
+					int dest_index = (dy * width + dx) * 4;
+					dest_pixel[dest_index] = src_pixel[src_index];
+					dest_pixel[dest_index + 1] = src_pixel[src_index + 1];
+					dest_pixel[dest_index + 2] = src_pixel[src_index + 2];
+					dest_pixel[dest_index + 3] = src_pixel[src_index + 3];
+				}
+			}
+			return std::move(imgData);
 		}
 
 		bool savePng(const char* file)
