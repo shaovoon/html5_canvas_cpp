@@ -1,3 +1,7 @@
+// Copyright 2019 Shao Voon Wong
+// No warranties expressed or implied
+// use it at your risk!
+
 #pragma once
 #include <string>
 #include <emscripten.h>

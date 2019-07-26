@@ -1,5 +1,6 @@
-// CanvasExample.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+// Copyright 2019 Shao Voon Wong
+// No warranties expressed or implied
+// use it at your risk!
 
 #include <iostream>
 
