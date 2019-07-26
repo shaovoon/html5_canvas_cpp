@@ -72,8 +72,8 @@
     <Content Include="modernizr-canvas.js" />
     <Content Include="preamble.js" />
     <Content Include="pure_js.html" />
-    <Content Include="simple.html" />
-    <Content Include="simple.js" />
+    <Content Include="cpp.html" />
+    <Content Include="cpp.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
