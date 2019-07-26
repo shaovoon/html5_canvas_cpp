@@ -10,17 +10,77 @@
 #endif
 
 
-int main()
+// Display text with fillText()
+void displayText()
 {
 	using namespace canvas;
-/*
-	Canvas ctx("canvas", 640, 480);
-	ctx.set_fillStyle("#ffffaa");
-	ctx.fillRect(0.0, 0.0, 500.0, 300.0);
 
-	ctx.set_fillStyle("#000000");
-	ctx.set_font("36px Arial");
-	//ctx.fillText("Did you see this?", 10.0, 50.0);
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.set_font("20px Georgia");
+	ctx.fillText("Hello World!", 10, 50);
+
+	ctx.set_font("30px Verdana");
+
+	// Create gradient
+	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
+	gradient.addColorStop(0.0, "#ff00ff");
+	gradient.addColorStop(0.5, "#0000ff");
+	gradient.addColorStop(1.0, "#ff0000");
+	// Fill with gradient
+	ctx.set_fillStyle(gradient);
+	ctx.fillText("Big smile!", 10, 90);
+
+	ctx.savePng("c:\\temp\\displayText.png");
+}
+
+// Display text outline with strokeText()
+void displayTextOutline()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.set_font("20px Georgia");
+	ctx.set_lineWidth(1.0);
+	ctx.strokeText("Hello World!", 10, 50);
+
+	ctx.set_font("30px Verdana");
+
+	// Create gradient
+	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
+	gradient.addColorStop(0.0, "#ff00ff");
+	gradient.addColorStop(0.5, "#0000ff");
+	gradient.addColorStop(1.0, "#ff0000");
+	// Fill with gradient
+	ctx.set_strokeStyle(gradient);
+	ctx.strokeText("Big smile!", 10, 90);
+
+	ctx.savePng("c:\\temp\\displayTextOutline.png");
+}
+
+// Display Image
+void displayImage()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+#ifdef __EMSCRIPTEN__
+	ctx.drawImage("yes_image", 10.0, 10.0);
+#else
+	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
+#endif
+
+	ctx.savePng("c:\\temp\\displayImage.png");
+}
+
+// Draw line with a round cap
+void drawLine()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
 
 	ctx.beginPath();
 	ctx.set_lineWidth(10.0);
@@ -29,52 +89,31 @@ int main()
 	ctx.lineTo(200, 20);
 	ctx.stroke();
 
-#ifdef __EMSCRIPTEN__
-	ctx.drawImage("yes_image", 10.0, 10.0);
-#else
-	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.png", 10.0, 10.0);
-#endif
-	ctx.set_lineWidth(2.0);
-	ctx.set_strokeStyle("#000000");
-	ctx.strokeText("Did you see this?", 50.0, 50.0);
-*/
-	Canvas ctx("canvas", 640, 480);
-	auto grad = ctx.createLinearGradient("grad", 0.0, 0.0, 640.0, 0.0);
-	//auto grad = ctx.createRadialGradient("grad", 75, 50, 5, 90, 60, 100);
-	grad.addColorStop(0.0, "#ff0000");
-	grad.addColorStop(1.0, "#0000ff");
-	ctx.set_fillStyle(grad);
-	ctx.fillRect(0.0, 0.0, 640.0, 480.0);
+	ctx.savePng("c:\\temp\\drawLine.png");
+}
 
-	//ImageData imgData = ctx.createImageData("imgData", 100, 100);
-	ImageData imgData = ctx.getImageData("imgData", 10, 10, 100, 100);
-	/*
-	for (int y = 0; y < imgData.height(); ++y)
-	{
-		for (int x = 0; x < imgData.width(); ++x)
-		{
-			int index = (y * imgData.width() + x) * 4;
-			imgData.data()[index] = 0xff;
-			imgData.data()[index+1] = 0xff;
-			imgData.data()[index+2] = 0xff;
-			imgData.data()[index+3] = 0xff;
-		}
+// Draw line with a round cap
+void drawBezier()
+{
+	using namespace canvas;
 
-	}
-	*/
-	ctx.putImageData(imgData, 200, 200, 0, 0, 100, 100);
-
-	ctx.set_strokeStyle("#000000");
+	Canvas ctx("canvas", 320, 280);
 
 	ctx.beginPath();
 	ctx.moveTo(20, 20);
-	//ctx.bezierCurveTo(20, 100, 200, 100, 200, 20);
-	ctx.quadraticCurveTo(20, 100, 200, 20);
+	ctx.bezierCurveTo(20, 100, 200, 100, 200, 20);
 	ctx.stroke();
 
-	ctx.savePng("c:\\temp\\image.png");
-
-
-    std::cout << "Done!\n";
+	ctx.savePng("c:\\temp\\drawBezier.png");
 }
 
+int main()
+{
+	//displayText();
+	//displayTextOutline();
+	//displayImage();
+	drawLine();
+	drawBezier();
+
+	std::cout << "Done!\n";
+}

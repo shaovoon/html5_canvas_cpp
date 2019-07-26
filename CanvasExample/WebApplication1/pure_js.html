@@ -1,0 +1,99 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your First JS Canvas App</title>
+    <script src="modernizr-canvas.js"></script>
+    <script type="text/javascript">
+        window.addEventListener("load", eventWindowLoaded, false);
+
+        function eventWindowLoaded() {
+            canvasApp();
+        }
+
+		function displayText()
+		{
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+			ctx.font = "20px Georgia";
+			ctx.fillText("Hello World!", 10, 50);
+			
+			ctx.font = "30px Verdana";
+			
+			// Create gradient
+			var gradient = ctx.createLinearGradient(0, 0, 320, 0);
+			gradient.addColorStop(0.0," magenta");
+			gradient.addColorStop(0.5, "blue");
+			gradient.addColorStop(1.0, "red");
+			// Fill with gradient
+			ctx.fillStyle = gradient;
+			ctx.fillText("Big smile!", 10, 90);
+		}
+		function displayTextOutline()
+		{
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+			ctx.font = "20px Georgia";
+			ctx.strokeText("Hello World!", 10, 50);
+			
+			ctx.font = "30px Verdana";
+			
+			// Create gradient
+			var gradient = ctx.createLinearGradient(0, 0, 320, 0);
+			gradient.addColorStop(0.0," magenta");
+			gradient.addColorStop(0.5, "blue");
+			gradient.addColorStop(1.0, "red");
+			// Fill with gradient
+			ctx.strokeStyle = gradient;
+			ctx.strokeText("Big smile!", 10, 90);
+		}
+		function displayImage()
+		{
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+			var img = document.getElementById("yes_image");
+			ctx.drawImage(img, 10, 10);
+        }
+        function drawLine() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.beginPath();
+            ctx.lineWidth = 10.0;
+            ctx.lineCap = "round";
+            ctx.moveTo(20, 20);
+            ctx.lineTo(200, 20);
+            ctx.stroke();
+        }
+        function drawBezier() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.beginPath();
+            ctx.moveTo(20, 20);
+            ctx.bezierCurveTo(20, 100, 200, 100, 200, 20);
+            ctx.stroke();
+        }
+        function canvasApp() {
+            if (!Modernizr.canvas) {
+                return;
+            }
+			//displayText();
+			//displayTextOutline();
+			//displayImage();
+            //drawLine();
+            drawBezier();
+        }
+    </script>
+</head>
+<body>
+    <div style="position: absolute; top: 0px; left: 0px;">
+        <canvas id="canvas" width="320" height="280"> Your browser does not support HTML5 Canvas. </canvas>
+    </div>
+    <div style="display: none;"><img src="yes.jpg" id="yes_image"></div>
+</body>
+</html>
+

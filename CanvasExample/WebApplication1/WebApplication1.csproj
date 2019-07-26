@@ -67,12 +67,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="canvas.html" />
-    <Content Include="canvas_emscript.html" />
     <Content Include="helloworld.gif" />
     <Content Include="jscanvas.js" />
     <Content Include="modernizr-canvas.js" />
     <Content Include="preamble.js" />
+    <Content Include="pure_js.html" />
     <Content Include="simple.html" />
     <Content Include="simple.js" />
     <Content Include="Web.config" />
