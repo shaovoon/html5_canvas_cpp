@@ -56,6 +56,7 @@ void displayTextOutline()
 	gradient.addColorStop(0.0, fromRGB(0xff, 0, 0xff));
 	gradient.addColorStop(0.5, fromRGB(0, 0, 0xff));
 	gradient.addColorStop(1.0, fromRGB(0xff, 0, 0));
+
 	// Fill with gradient
 	ctx.set_strokeStyle(gradient);
 	ctx.strokeText("Big smile!", 10, 90);
@@ -113,8 +114,8 @@ void drawBezier()
 
 int main()
 {
-	//displayText();
-	displayTextOutline();
+	displayText();
+	//displayTextOutline();
 	//displayImage();
 	//drawLine();
 	//drawBezier();
