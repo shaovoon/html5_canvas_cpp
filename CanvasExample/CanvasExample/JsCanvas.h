@@ -18,34 +18,11 @@ namespace canvas
 		bevel
 	};
 	
-	unsigned int fromRGBA(unsigned char a, unsigned char r, unsigned char g, unsigned char b)
-	{
-		return (unsigned int)((a << 24) | (r << 16) | (g << 8) | b);
-	}
-	
 	unsigned int fromRGB(unsigned char r, unsigned char g, unsigned char b)
 	{
-		return fromRGBA(0xff, r, g, b);
+		return (unsigned int)((r << 16) | (g << 8) | b);
 	}
 	
-	unsigned int fromRGBA(double a, double r, double g, double b)
-	{
-		unsigned int ia = a * 255.0;
-		unsigned int ir = r * 255.0;
-		unsigned int ig = g * 255.0;
-		unsigned int ib = b * 255.0;
-		ia &= 0xff;
-		ir &= 0xff;
-		ig &= 0xff;
-		ib &= 0xff;
-		return (unsigned int)((ia << 24) | (ir << 16) | (ig << 8) | ib);
-	}
-	
-	unsigned int fromRGB(double a, double r, double g, double b)
-	{
-		return fromRGBA(1.0, r, g, b);
-	}
-
 	// https://cairographics.org/manual/cairo-Image-Surfaces.html
 	class ImageData
 	{
@@ -94,6 +71,17 @@ namespace canvas
 
 				grad.addColorStop($1, UTF8ToString($2));
 				}, m_Name.c_str(), stop, color);
+		}
+		void addColorStop(double stop, unsigned int color)
+		{
+			color &= 0xffffff;
+			char buf[20];
+			sprintf(buf, "#%06x", color);
+			EM_ASM_({
+				var grad = get_gradient(UTF8ToString($0));
+
+				grad.addColorStop($1, UTF8ToString($2));
+				}, m_Name.c_str(), stop, buf);
 		}
 		const char* getName() const
 		{
@@ -151,8 +139,10 @@ namespace canvas
 		
 		void set_fillStyle(unsigned int value)
 		{
+			value &= 0xffffff;
+
 			char buf[20];
-			sprintf(buf, "#%08x", value);
+			sprintf(buf, "#%06x", value);
 			EM_ASM_({
 				var ctx = get_canvas(UTF8ToString($0));
 
@@ -180,8 +170,10 @@ namespace canvas
 		
 		void set_strokeStyle(unsigned int value)
 		{
+			value &= 0xffffff;
+
 			char buf[20];
-			sprintf(buf, "#%08x", value);
+			sprintf(buf, "#%06x", value);
 			EM_ASM_({
 				var ctx = get_canvas(UTF8ToString($0));
 
@@ -472,7 +464,6 @@ namespace canvas
 		
 		void putImageData(ImageData& imgData, int x, int y, int dirtyX, int dirtyY, int dirtyWidth, int dirtyHeight)
 		{
-			printf("imgData.name(): %s\n", imgData.name());
 			EM_ASM_({
 				var ctx = get_canvas(UTF8ToString($0));
 

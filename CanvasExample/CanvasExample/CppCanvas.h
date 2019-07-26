@@ -19,40 +19,18 @@ namespace canvas
 		bevel
 	};
 
-	unsigned int fromRGBA(unsigned char a, unsigned char r, unsigned char g, unsigned char b)
-	{
-		return (unsigned int)((a << 24) | (r << 16) | (g << 8) | b);
-	}
-
 	unsigned int fromRGB(unsigned char r, unsigned char g, unsigned char b)
 	{
-		return fromRGBA(0xff, r, g, b);
+		return (unsigned int)((r << 16) | (g << 8) | b);
 	}
 
-	unsigned int fromRGBA(double a, double r, double g, double b)
-	{
-		unsigned int ia = a * 255.0;
-		unsigned int ir = r * 255.0;
-		unsigned int ig = g * 255.0;
-		unsigned int ib = b * 255.0;
-		ia &= 0xff;
-		ir &= 0xff;
-		ig &= 0xff;
-		ib &= 0xff;
-		return (unsigned int)((ia << 24) | (ir << 16) | (ig << 8) | ib);
-	}
-
-	unsigned int fromRGB(double a, double r, double g, double b)
-	{
-		return fromRGBA(1.0, r, g, b);
-	}
 	// https://cairographics.org/manual/cairo-Image-Surfaces.html
 	class ImageData
 	{
 	public:
 		ImageData(unsigned char* data, int width, int height) 
 			: m_Data(data), m_Width(width), m_Height(height) {}
-		ImageData(ImageData&& other)
+		ImageData(ImageData&& other) noexcept
 		{
 			m_Data = other.m_Data;
 			m_Width = other.m_Width;
@@ -89,7 +67,7 @@ namespace canvas
 	{
 	public:
 		Gradient(cairo_pattern_t* pattern) : m_Pattern(pattern) {}
-		Gradient(Gradient&& other)
+		Gradient(Gradient&& other) noexcept
 		{
 			m_Pattern = other.m_Pattern;
 			other.m_Pattern = nullptr;
@@ -106,23 +84,18 @@ namespace canvas
 
 		void addColorStop(double stop, const char* color)
 		{
-			if (strlen(color) > 7)
-			{
-				unsigned long v = strtoul(color + 1, nullptr, 16);
-				double a = ((v & 0xff000000) >> 24) / 255.0;
-				double r = ((v & 0xff0000) >> 16) / 255.0;
-				double g = ((v & 0xff00) >> 8) / 255.0;
-				double b = (v & 0xff) / 255.0;
-				cairo_pattern_add_color_stop_rgba(m_Pattern, stop, r, g, b, a);
-			}
-			else
-			{
-				unsigned long v = strtoul(color + 1, nullptr, 16);
-				double r = ((v & 0xff0000) >> 16) / 255.0;
-				double g = ((v & 0xff00) >> 8) / 255.0;
-				double b = (v & 0xff) / 255.0;
-				cairo_pattern_add_color_stop_rgb(m_Pattern, stop, r, g, b);
-			}
+			unsigned long v = strtoul(color + 1, nullptr, 16);
+			double r = ((v & 0xff0000) >> 16) / 255.0;
+			double g = ((v & 0xff00) >> 8) / 255.0;
+			double b = (v & 0xff) / 255.0;
+			cairo_pattern_add_color_stop_rgb(m_Pattern, stop, r, g, b);
+		}
+		void addColorStop(double stop, unsigned int color)
+		{
+			double r = ((color & 0xff0000) >> 16) / 255.0;
+			double g = ((color & 0xff00) >> 8) / 255.0;
+			double b = (color & 0xff) / 255.0;
+			cairo_pattern_add_color_stop_rgb(m_Pattern, stop, r, g, b);
 		}
 		cairo_pattern_t* getPattern() const
 		{

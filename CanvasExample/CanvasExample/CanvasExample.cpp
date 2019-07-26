@@ -49,9 +49,13 @@ void displayTextOutline()
 
 	// Create gradient
 	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
-	gradient.addColorStop(0.0, "#ff00ff");
-	gradient.addColorStop(0.5, "#0000ff");
-	gradient.addColorStop(1.0, "#ff0000");
+	//gradient.addColorStop(0.0, "#ff00ff");
+	//gradient.addColorStop(0.5, "#0000ff");
+	//gradient.addColorStop(1.0, "#ff0000");
+
+	gradient.addColorStop(0.0, fromRGB(0xff, 0, 0xff));
+	gradient.addColorStop(0.5, fromRGB(0, 0, 0xff));
+	gradient.addColorStop(1.0, fromRGB(0xff, 0, 0));
 	// Fill with gradient
 	ctx.set_strokeStyle(gradient);
 	ctx.strokeText("Big smile!", 10, 90);
@@ -110,10 +114,10 @@ void drawBezier()
 int main()
 {
 	//displayText();
-	//displayTextOutline();
+	displayTextOutline();
 	//displayImage();
-	drawLine();
-	drawBezier();
+	//drawLine();
+	//drawBezier();
 
 	std::cout << "Done!\n";
 }
