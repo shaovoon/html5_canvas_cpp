@@ -75,7 +75,6 @@
     <Content Include="preamble.js" />
     <Content Include="simple.html" />
     <Content Include="simple.js" />
-    <Content Include="test_csp_img.html" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
