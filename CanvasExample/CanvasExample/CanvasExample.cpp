@@ -18,10 +18,10 @@ void displayText()
 
 	Canvas ctx("canvas", 320, 280);
 
-	ctx.set_font("20px Georgia");
+	ctx.font = "20px Georgia";
 	ctx.fillText("Hello World!", 10, 50);
 
-	ctx.set_font("30px Verdana");
+	ctx.font = "30px Verdana";
 
 	// Create gradient
 	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
@@ -29,7 +29,7 @@ void displayText()
 	gradient.addColorStop(0.5, "#0000ff");
 	gradient.addColorStop(1.0, "#ff0000");
 	// Fill with gradient
-	ctx.set_fillStyle(gradient);
+	ctx.fillStyle = gradient;
 	ctx.fillText("Big smile!", 10, 90);
 
 	ctx.savePng("c:\\temp\\displayText.png");
@@ -42,24 +42,20 @@ void displayTextOutline()
 
 	Canvas ctx("canvas", 320, 280);
 
-	ctx.set_font("20px Georgia");
-	ctx.set_lineWidth(1.0);
+	ctx.font = "20px Georgia";
+	ctx.lineWidth = 1.0;
 	ctx.strokeText("Hello World!", 10, 50);
 
-	ctx.set_font("30px Verdana");
+	ctx.font = "30px Verdana";
 
 	// Create gradient
 	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
-	//gradient.addColorStop(0.0, "#ff00ff");
-	//gradient.addColorStop(0.5, "#0000ff");
-	//gradient.addColorStop(1.0, "#ff0000");
-
-	gradient.addColorStop(0.0, fromRGB(0xff, 0, 0xff));
-	gradient.addColorStop(0.5, fromRGB(0, 0, 0xff));
-	gradient.addColorStop(1.0, fromRGB(0xff, 0, 0));
+	gradient.addColorStop(0.0, "#ff00ff");
+	gradient.addColorStop(0.5, "#0000ff");
+	gradient.addColorStop(1.0, "#ff0000");
 
 	// Fill with gradient
-	ctx.set_strokeStyle(gradient);
+	ctx.strokeStyle = gradient;
 	ctx.strokeText("Big smile!", 10, 90);
 
 	ctx.savePng("c:\\temp\\displayTextOutline.png");
@@ -89,8 +85,8 @@ void drawLine()
 	Canvas ctx("canvas", 320, 280);
 
 	ctx.beginPath();
-	ctx.set_lineWidth(10.0);
-	ctx.set_lineCap(LineCap::round);
+	ctx.lineWidth = 10.0;
+	ctx.lineCap = LineCap::round;
 	ctx.moveTo(20, 20);
 	ctx.lineTo(200, 20);
 	ctx.stroke();
@@ -122,8 +118,8 @@ void clearRect()
 	auto grad = ctx.createLinearGradient("grad", 0.0, 0.0, 320.0, 0.0);
 	grad.addColorStop(0.0, "#ff0000");
 	grad.addColorStop(1.0, "#0000ff");
-	ctx.set_fillStyle(grad);
-	ctx.fillRect(0.0, 0.0, 640.0, 480.0);
+	ctx.fillStyle = grad;
+	ctx.fillRect(0.0, 0.0, 320.0, 280.0);
 
 	ctx.clearRect(100, 100, 50, 50);
 	ctx.savePng("c:\\temp\\clearRect.png");
@@ -131,12 +127,12 @@ void clearRect()
 
 int main()
 {
-	//displayText();
+	displayText();
 	//displayTextOutline();
 	//displayImage();
 	//drawLine();
 	//drawBezier();
-	clearRect();
+	//clearRect();
 
 	std::cout << "Done!\n";
 }

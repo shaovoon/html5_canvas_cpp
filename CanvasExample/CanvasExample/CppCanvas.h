@@ -2,6 +2,10 @@
 // No warranties expressed or implied
 // use it at your risk!
 
+// Release log
+// v0.2.0: Setters converted to properties
+// v0.1.0: first release
+
 #pragma once
 #include <cairo.h>
 #define STB_IMAGE_IMPLEMENTATION
@@ -27,6 +31,8 @@ namespace canvas
 	{
 		return (unsigned int)((r << 16) | (g << 8) | b);
 	}
+
+
 
 	// https://cairographics.org/manual/cairo-Image-Surfaces.html
 	class ImageData
@@ -117,6 +123,229 @@ namespace canvas
 		cairo_pattern_t* m_Pattern;
 	};
 
+	class FillStyleProperty
+	{
+	public:
+		FillStyleProperty() : cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(const char* color)
+		{
+			unsigned long v = strtoul(color + 1, nullptr, 16);
+			double r = ((v & 0xff0000) >> 16) / 255.0;
+			double g = ((v & 0xff00) >> 8) / 255.0;
+			double b = (v & 0xff) / 255.0;
+			cairo_set_source_rgb(cr, r, g, b);
+		}
+		void operator=(unsigned int color)
+		{
+			double r = ((color & 0xff0000) >> 16) / 255.0;
+			double g = ((color & 0xff00) >> 8) / 255.0;
+			double b = (color & 0xff) / 255.0;
+			cairo_set_source_rgb(cr, r, g, b);
+		}
+		void operator=(const canvas::Gradient& gradient)
+		{
+			cairo_set_source(cr, gradient.getPattern());
+		}
+	private:
+		// remove copy constructor and assignment operator
+		FillStyleProperty(const FillStyleProperty& other) = delete;
+		void operator=(const FillStyleProperty& other) = delete;
+
+		cairo_t* cr;
+	};
+
+	class StrokeStyleProperty
+	{
+	public:
+		StrokeStyleProperty() : cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(const char* color)
+		{
+			unsigned long v = strtoul(color + 1, nullptr, 16);
+			double r = ((v & 0xff0000) >> 16) / 255.0;
+			double g = ((v & 0xff00) >> 8) / 255.0;
+			double b = (v & 0xff) / 255.0;
+			cairo_set_source_rgb(cr, r, g, b);
+		}
+		void operator=(unsigned int color)
+		{
+			double r = ((color & 0xff0000) >> 16) / 255.0;
+			double g = ((color & 0xff00) >> 8) / 255.0;
+			double b = (color & 0xff) / 255.0;
+			cairo_set_source_rgb(cr, r, g, b);
+		}
+		void operator=(const canvas::Gradient& gradient)
+		{
+			cairo_set_source(cr, gradient.getPattern());
+		}
+	private:
+		// remove copy constructor and assignment operator
+		StrokeStyleProperty(const StrokeStyleProperty& other) = delete;
+		void operator=(const StrokeStyleProperty& other) = delete;
+
+		cairo_t* cr;
+	};
+
+	class FontProperty
+	{
+	public:
+		FontProperty() : cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(const char* value)
+		{
+			std::string v = value;
+			size_t font_pos = v.find_first_of(' ');
+			if (font_pos != std::string::npos)
+			{
+				std::string font_str = v.substr(font_pos + 1);
+
+				cairo_select_font_face(cr, font_str.c_str(),
+					CAIRO_FONT_SLANT_NORMAL,
+					CAIRO_FONT_WEIGHT_NORMAL);
+			}
+			else
+			{
+				cairo_select_font_face(cr, value,
+					CAIRO_FONT_SLANT_NORMAL,
+					CAIRO_FONT_WEIGHT_NORMAL);
+			}
+
+			size_t font_size_pos = v.find_first_of("px");
+			if (font_size_pos != std::string::npos)
+			{
+				std::string font_size_str = v.substr(0, font_size_pos);
+				unsigned long font_size = strtoul(font_size_str.c_str(), nullptr, 10);
+				cairo_set_font_size(cr, (double)font_size);
+			}
+		}
+	private:
+		// remove copy constructor and assignment operator
+		FontProperty(const FontProperty& other) = delete;
+		void operator=(const FontProperty& other) = delete;
+
+		cairo_t* cr;
+	};
+
+	class LineCapProperty
+	{
+	public:
+		LineCapProperty() : cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(LineCap cap)
+		{
+			cairo_line_cap_t cairo_cap = CAIRO_LINE_CAP_BUTT;
+			if (cap == LineCap::butt)
+				cairo_cap = CAIRO_LINE_CAP_BUTT;
+			else if (cap == LineCap::round)
+				cairo_cap = CAIRO_LINE_CAP_ROUND;
+			else if (cap == LineCap::square)
+				cairo_cap = CAIRO_LINE_CAP_SQUARE;
+
+			cairo_set_line_cap(cr, cairo_cap);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		LineCapProperty(const LineCapProperty& other) = delete;
+		void operator=(const LineCapProperty& other) = delete;
+
+		cairo_t* cr;
+	};
+
+	class LineJoinProperty
+	{
+	public:
+		LineJoinProperty() : cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(LineJoin join)
+		{
+			cairo_line_join_t cairo_join = CAIRO_LINE_JOIN_MITER;
+			if (join == LineJoin::miter)
+				cairo_join = CAIRO_LINE_JOIN_MITER;
+			else if (join == LineJoin::round)
+				cairo_join = CAIRO_LINE_JOIN_ROUND;
+			else if (join == LineJoin::bevel)
+				cairo_join = CAIRO_LINE_JOIN_BEVEL;
+
+			cairo_set_line_join(cr, cairo_join);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		LineJoinProperty(const LineJoinProperty& other) = delete;
+		void operator=(const LineJoinProperty& other) = delete;
+
+		cairo_t* cr;
+	};
+
+	class LineWidthProperty
+	{
+	public:
+		LineWidthProperty() : cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(double width)
+		{
+			cairo_set_line_width(cr, width);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		LineWidthProperty(const LineWidthProperty& other) = delete;
+		void operator=(const LineWidthProperty& other) = delete;
+
+		cairo_t* cr;
+	};
+
+	class MiterLimitProperty
+	{
+	public:
+		MiterLimitProperty() : cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(double limit)
+		{
+			cairo_set_miter_limit(cr, limit);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		MiterLimitProperty(const MiterLimitProperty& other) = delete;
+		void operator=(const MiterLimitProperty& other) = delete;
+
+		cairo_t* cr;
+	};
+
 	class Canvas
 	{
 	public:
@@ -124,6 +353,14 @@ namespace canvas
 		{
 			surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 			cr = cairo_create(surface);
+
+			fillStyle.init(cr);
+			strokeStyle.init(cr);
+			font.init(cr);
+			lineCap.init(cr);
+			lineJoin.init(cr);
+			lineWidth.init(cr);
+			miterLimit.init(cr);
 		}
 
 		~Canvas()
@@ -171,84 +408,6 @@ namespace canvas
 			cairo_rectangle(cr, x, y, width, height);
 			cairo_stroke_preserve(cr);
 			cairo_stroke(cr);
-		}
-
-		void set_fillStyle(const char* value)
-		{
-			set_strokeStyle(value);
-		}
-
-		void set_fillStyle(unsigned int value)
-		{
-			set_strokeStyle(value);
-		}
-
-		void set_fillStyle(const Gradient& grad)
-		{
-			set_strokeStyle(grad);
-		}
-
-		void set_strokeStyle(const Gradient& grad)
-		{
-			cairo_set_source(cr, grad.getPattern());
-		}
-
-		void set_strokeStyle(const char* value)
-		{
-			if (strlen(value) > 7)
-			{
-				unsigned long v = strtoul(value + 1, nullptr, 16);
-				double a = ((v & 0xff000000) >> 24) / 255.0;
-				double r = ((v & 0xff0000) >> 16) / 255.0;
-				double g = ((v & 0xff00) >> 8) / 255.0;
-				double b = (v & 0xff) / 255.0;
-				cairo_set_source_rgba(cr, r, g, b, a);
-			}
-			else
-			{
-				unsigned long v = strtoul(value + 1, nullptr, 16);
-				double r = ((v & 0xff0000) >> 16) / 255.0;
-				double g = ((v & 0xff00) >> 8) / 255.0;
-				double b = (v & 0xff) / 255.0;
-				cairo_set_source_rgb(cr, r, g, b);
-			}
-		}
-
-		void set_strokeStyle(unsigned int value)
-		{
-			double a = ((value & 0xff000000) >> 24) / 255.0;
-			double r = ((value & 0xff0000) >> 16) / 255.0;
-			double g = ((value & 0xff00) >> 8) / 255.0;
-			double b = (value & 0xff) / 255.0;
-			cairo_set_source_rgba(cr, r, g, b, a);
-		}
-
-		void set_font(const char* value)
-		{
-			std::string v = value;
-			size_t font_pos = v.find_first_of(' ');
-			if (font_pos != std::string::npos)
-			{
-				std::string font_str = v.substr(font_pos + 1);
-
-				cairo_select_font_face(cr, font_str.c_str(),
-					CAIRO_FONT_SLANT_NORMAL,
-					CAIRO_FONT_WEIGHT_NORMAL);
-			}
-			else
-			{
-				cairo_select_font_face(cr, value,
-					CAIRO_FONT_SLANT_NORMAL,
-					CAIRO_FONT_WEIGHT_NORMAL);
-			}
-
-			size_t font_size_pos = v.find_first_of("px");
-			if (font_size_pos != std::string::npos)
-			{
-				std::string font_size_str = v.substr(0, font_size_pos);
-				unsigned long font_size = strtoul(font_size_str.c_str(), nullptr, 10);
-				cairo_set_font_size(cr, (double)font_size);
-			}
 		}
 
 		void fillText(const char* text, double x, double y)
@@ -352,37 +511,6 @@ namespace canvas
 			cairo_fill(cr);
 		}
 
-		void set_lineCap(LineCap cap)
-		{
-			cairo_line_cap_t cairo_cap = CAIRO_LINE_CAP_BUTT;
-			if (cap == LineCap::butt)
-				cairo_cap = CAIRO_LINE_CAP_BUTT;
-			else if (cap == LineCap::round)
-				cairo_cap = CAIRO_LINE_CAP_ROUND;
-			else if (cap == LineCap::square)
-				cairo_cap = CAIRO_LINE_CAP_SQUARE;
-
-			cairo_set_line_cap(cr, cairo_cap);
-		}
-
-		void set_lineJoin(LineJoin cap)
-		{
-			cairo_line_join_t cairo_join = CAIRO_LINE_JOIN_MITER;
-			if (cap == LineJoin::miter)
-				cairo_join = CAIRO_LINE_JOIN_MITER;
-			else if (cap == LineJoin::round)
-				cairo_join = CAIRO_LINE_JOIN_ROUND;
-			else if (cap == LineJoin::bevel)
-				cairo_join = CAIRO_LINE_JOIN_BEVEL;
-
-			cairo_set_line_join(cr, cairo_join);
-		}
-
-		void set_lineWidth(double width)
-		{
-			cairo_set_line_width(cr, width);
-		}
-
 		void scale(double sx, double sy)
 		{
 			cairo_scale(cr, sx, sy);
@@ -415,11 +543,6 @@ namespace canvas
 		{
 			cairo_identity_matrix(cr);
 			transform(xx, xy, yx, yy, x0, y0);
-		}
-
-		void set_miterLimit(double limit)
-		{
-			cairo_set_miter_limit(cr, limit);
 		}
 
 		// https://github.com/aleksaro/gloom/wiki/Loading-images-with-stb
@@ -528,6 +651,14 @@ namespace canvas
 			return (status == CAIRO_STATUS_SUCCESS);
 		}
 
+		FillStyleProperty fillStyle;
+		StrokeStyleProperty strokeStyle;
+		FontProperty font;
+		LineCapProperty lineCap;
+		LineJoinProperty lineJoin;
+		LineWidthProperty lineWidth;
+		MiterLimitProperty miterLimit;
+
 	private:
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;
@@ -535,7 +666,5 @@ namespace canvas
 
 		cairo_surface_t* surface;
 		cairo_t* cr;
-
 	};
-
 }

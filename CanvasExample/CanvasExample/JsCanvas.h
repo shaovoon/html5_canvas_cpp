@@ -2,6 +2,10 @@
 // No warranties expressed or implied
 // use it at your risk!
 
+// Release log
+// v0.2.0: Setters converted to properties
+// v0.1.0: first release
+
 #pragma once
 #include <string>
 #include <emscripten.h>
@@ -103,6 +107,244 @@ namespace canvas
 		std::string m_Name;
 	};
 
+	class FillStyleProperty
+	{
+	public:
+		FillStyleProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(const char* color)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.fillStyle = UTF8ToString($1);
+				}, m_Name.c_str(), color);
+		}
+		void operator=(unsigned int color)
+		{
+			color &= 0xffffff;
+
+			char buf[20];
+			sprintf(buf, "#%06x", color);
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.fillStyle = UTF8ToString($1);
+				}, m_Name.c_str(), buf);
+		}
+		void operator=(const canvas::Gradient& gradient)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.fillStyle = get_gradient(UTF8ToString($1));
+				}, m_Name.c_str(), gradient.getName());
+		}
+	private:
+		// remove copy constructor and assignment operator
+		FillStyleProperty(const FillStyleProperty& other) = delete;
+		void operator=(const FillStyleProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class StrokeStyleProperty
+	{
+	public:
+		StrokeStyleProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(const char* color)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.strokeStyle = UTF8ToString($1);
+				}, m_Name.c_str(), color);
+		}
+		void operator=(unsigned int color)
+		{
+			color &= 0xffffff;
+
+			char buf[20];
+			sprintf(buf, "#%06x", color);
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.strokeStyle = UTF8ToString($1);
+				}, m_Name.c_str(), buf);
+		}
+		void operator=(const canvas::Gradient& gradient)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.strokeStyle = get_gradient(UTF8ToString($1));
+				}, m_Name.c_str(), gradient.getName());
+		}
+	private:
+		// remove copy constructor and assignment operator
+		StrokeStyleProperty(const StrokeStyleProperty& other) = delete;
+		void operator=(const StrokeStyleProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class FontProperty
+	{
+	public:
+		FontProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(const char* value)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.font = UTF8ToString($1);
+				}, m_Name.c_str(), value);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		FontProperty(const FontProperty& other) = delete;
+		void operator=(const FontProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class LineCapProperty
+	{
+	public:
+		LineCapProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(LineCap cap)
+		{
+			const char* cairo_cap = "butt";
+			if (cap == LineCap::butt)
+				cairo_cap = "butt";
+			else if (cap == LineCap::round)
+				cairo_cap = "round";
+			else if (cap == LineCap::square)
+				cairo_cap = "square";
+
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.lineCap = UTF8ToString($1);
+				}, m_Name.c_str(), cairo_cap);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		LineCapProperty(const LineCapProperty& other) = delete;
+		void operator=(const LineCapProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class LineJoinProperty
+	{
+	public:
+		LineJoinProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(LineJoin join)
+		{
+			const char* cairo_join = "miter";
+			if (join == LineJoin::miter)
+				cairo_join = "miter";
+			else if (join == LineJoin::round)
+				cairo_join = "round";
+			else if (join == LineJoin::bevel)
+				cairo_join = "bevel";
+
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.lineJoin = UTF8ToString($1);
+				}, m_Name.c_str(), cairo_join);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		LineJoinProperty(const LineJoinProperty& other) = delete;
+		void operator=(const LineJoinProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class LineWidthProperty
+	{
+	public:
+		LineWidthProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(double width)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.lineWidth = $1;
+				}, m_Name.c_str(), width);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		LineWidthProperty(const LineWidthProperty& other) = delete;
+		void operator=(const LineWidthProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class MiterLimitProperty
+	{
+	public:
+		MiterLimitProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(double limit)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.miterLimit = limit;
+				}, m_Name.c_str(), limit);
+		}
+	private:
+		// remove copy constructor and assignment operator
+		MiterLimitProperty(const MiterLimitProperty& other) = delete;
+		void operator=(const MiterLimitProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
 	class Canvas
 	{
 	public: 
@@ -111,6 +353,14 @@ namespace canvas
 			EM_ASM_({
 				add_canvas(UTF8ToString($0))
 				}, m_Name.c_str());
+				
+			fillStyle.init(name);
+			strokeStyle.init(name);
+			font.init(name);
+			lineCap.init(name);
+			lineJoin.init(name);
+			lineWidth.init(name);
+			miterLimit.init(name);
 		}
 
 		void fillRect(double x, double y, double width, double height)
@@ -140,77 +390,6 @@ namespace canvas
 				}, m_Name.c_str(), x, y, width, height);
 		}
 
-		void set_fillStyle(const char* value)
-		{
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.fillStyle = UTF8ToString($1);
-				}, m_Name.c_str(), value);
-		}
-		
-		void set_fillStyle(unsigned int value)
-		{
-			value &= 0xffffff;
-
-			char buf[20];
-			sprintf(buf, "#%06x", value);
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.fillStyle = UTF8ToString($1);
-				}, m_Name.c_str(), buf);
-		}
-		
-		void set_fillStyle(const Gradient& grad)
-		{
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.fillStyle = get_gradient(UTF8ToString($1));
-				}, m_Name.c_str(), grad.getName());
-		}
-		
-		void set_strokeStyle(const char* value)
-		{
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.strokeStyle = UTF8ToString($1);
-				}, m_Name.c_str(), value);
-		}
-		
-		void set_strokeStyle(unsigned int value)
-		{
-			value &= 0xffffff;
-
-			char buf[20];
-			sprintf(buf, "#%06x", value);
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.strokeStyle = UTF8ToString($1);
-				}, m_Name.c_str(), buf);
-		}
-		
-		void set_strokeStyle(const Gradient& grad)
-		{
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.strokeStyle = get_gradient(UTF8ToString($1));
-				}, m_Name.c_str(), grad.getName());
-		}
-		
-		void set_font(const char* value)
-		{
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.font = UTF8ToString($1);
-				}, m_Name.c_str(), value);
-		}
-		
 		void fillText(const char* text, double x, double y)
 		{
 			EM_ASM_({
@@ -321,49 +500,6 @@ namespace canvas
 				}, m_Name.c_str());
 		}
 
-		void set_lineCap(LineCap cap)
-		{
-			const char* cairo_cap = "butt";
-			if (cap == LineCap::butt)
-				cairo_cap = "butt";
-			else if (cap == LineCap::round)
-				cairo_cap = "round";
-			else if (cap == LineCap::square)
-				cairo_cap = "square";
-
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.lineCap = UTF8ToString($1);
-				}, m_Name.c_str(), cairo_cap);
-		}
-
-		void set_lineJoin(LineJoin cap)
-		{
-			const char* cairo_join = "miter";
-			if (cap == LineJoin::miter)
-				cairo_join = "miter";
-			else if (cap == LineJoin::round)
-				cairo_join = "round";
-			else if (cap == LineJoin::bevel)
-				cairo_join = "bevel";
-
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.lineCap = UTF8ToString($1);
-				}, m_Name.c_str(), cairo_join);
-		}
-
-		void set_lineWidth(double width)
-		{
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.lineWidth = $1;
-				}, m_Name.c_str(), width);
-		}
-
 		void scale(double sx, double sy)
 		{
 			EM_ASM_({
@@ -407,15 +543,6 @@ namespace canvas
 
 				ctx.setTransform($1, $2, $3, $4, $5, $6);
 				}, m_Name.c_str(), xx, xy, yx, yy, x0, y0);
-		}
-
-		void set_miterLimit(double limit)
-		{
-			EM_ASM_({
-				var ctx = get_canvas(UTF8ToString($0));
-
-				ctx.miterLimit = limit;
-				}, m_Name.c_str(), limit);
 		}
 
 		Gradient createLinearGradient(const char* name, double x0, double y0, double x1, double y1)
@@ -501,6 +628,14 @@ namespace canvas
 			// do nothing here.
 			return true;
 		}
+
+		FillStyleProperty fillStyle;
+		StrokeStyleProperty strokeStyle;
+		FontProperty font;
+		LineCapProperty lineCap;
+		LineJoinProperty lineJoin;
+		LineWidthProperty lineWidth;
+		MiterLimitProperty miterLimit;
 
 	private:
 		// remove copy constructor and assignment operator
