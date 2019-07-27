@@ -63,6 +63,10 @@ namespace canvas
 			return m_Height;
 		}
 	private:
+		// remove copy constructor and assignment operator
+		ImageData(const ImageData& other) = delete;
+		void operator=(const ImageData& other) = delete;
+
 		unsigned char* m_Data;
 		int m_Width;
 		int m_Height;
@@ -106,6 +110,10 @@ namespace canvas
 			return m_Pattern;
 		}
 	private:
+		// remove copy constructor and assignment operator
+		Gradient(const Gradient& other) = delete;
+		void operator=(const Gradient& other) = delete;
+
 		cairo_pattern_t* m_Pattern;
 	};
 
@@ -140,9 +148,22 @@ namespace canvas
 
 		void clearRect(double x, double y, double width, double height) // TODO: to be implemented
 		{
-			cairo_rectangle(cr, x, y, width, height);
-			cairo_stroke_preserve(cr);
-			cairo_fill(cr);
+			ImageData imgData = createImageData("imgData", width, height);
+
+			for (int y = 0; y < imgData.height(); ++y)
+			{
+				for (int x = 0; x < imgData.width(); ++x)
+				{
+					int index = (y * imgData.width() + x) * 4;
+					imgData.data()[index] = 0xff;
+					imgData.data()[index + 1] = 0xff;
+					imgData.data()[index + 2] = 0xff;
+					imgData.data()[index + 3] = 0xff;
+				}
+
+			}
+			
+			putImageData(imgData, x, y, 0, 0, width, height);
 		}
 
 		void strokeRect(double x, double y, double width, double height)
@@ -508,6 +529,10 @@ namespace canvas
 		}
 
 	private:
+		// remove copy constructor and assignment operator
+		Canvas(const Canvas& other) = delete;
+		void operator=(const Canvas& other) = delete;
+
 		cairo_surface_t* surface;
 		cairo_t* cr;
 

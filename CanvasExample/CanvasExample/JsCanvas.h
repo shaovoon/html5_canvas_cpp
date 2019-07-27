@@ -55,6 +55,10 @@ namespace canvas
 			return m_Height;
 		}
 	private:
+		// remove copy constructor and assignment operator
+		ImageData(const ImageData& other) = delete;
+		void operator=(const ImageData& other) = delete;
+
 		std::string m_Name;
 		int m_Width;
 		int m_Height;
@@ -92,6 +96,10 @@ namespace canvas
 			return m_Name.c_str();
 		}
 	private:
+		// remove copy constructor and assignment operator
+		Gradient(const Gradient& other) = delete;
+		void operator=(const Gradient& other) = delete;
+	
 		std::string m_Name;
 	};
 
@@ -495,6 +503,10 @@ namespace canvas
 		}
 
 	private:
+		// remove copy constructor and assignment operator
+		Canvas(const Canvas& other) = delete;
+		void operator=(const Canvas& other) = delete;
+
 		std::string m_Name;
 	};
 }

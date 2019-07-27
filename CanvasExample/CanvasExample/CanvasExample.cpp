@@ -113,13 +113,30 @@ void drawBezier()
 	ctx.savePng("c:\\temp\\drawBezier.png");
 }
 
+void clearRect()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	auto grad = ctx.createLinearGradient("grad", 0.0, 0.0, 320.0, 0.0);
+	grad.addColorStop(0.0, "#ff0000");
+	grad.addColorStop(1.0, "#0000ff");
+	ctx.set_fillStyle(grad);
+	ctx.fillRect(0.0, 0.0, 640.0, 480.0);
+
+	ctx.clearRect(100, 100, 50, 50);
+	ctx.savePng("c:\\temp\\clearRect.png");
+}
+
 int main()
 {
-	displayText();
+	//displayText();
 	//displayTextOutline();
 	//displayImage();
 	//drawLine();
 	//drawBezier();
+	clearRect();
 
 	std::cout << "Done!\n";
 }

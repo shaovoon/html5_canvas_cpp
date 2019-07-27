@@ -77,6 +77,19 @@
             ctx.bezierCurveTo(20, 100, 200, 100, 200, 20);
             ctx.stroke();
         }
+        function clearRect() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+	        var grad = ctx.createLinearGradient(0.0, 0.0, 320.0, 0.0);
+	        grad.addColorStop(0.0, "#ff0000");
+	        grad.addColorStop(1.0, "#0000ff");
+	        ctx.fillStyle = grad;
+	        ctx.fillRect(0.0, 0.0, 640.0, 480.0);
+
+	        ctx.clearRect(100, 100, 50, 50);
+        }
+
         function canvasApp() {
             if (!Modernizr.canvas) {
                 return;
@@ -85,7 +98,8 @@
 			//displayTextOutline();
 			//displayImage();
             //drawLine();
-            drawBezier();
+            //drawBezier();
+            clearRect();
         }
     </script>
 </head>
