@@ -77,6 +77,15 @@
             ctx.bezierCurveTo(20, 100, 200, 100, 200, 20);
             ctx.stroke();
         }
+        function drawQuadraticCurve() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.beginPath();
+            ctx.moveTo(20, 20);
+            ctx.quadraticCurveTo(20, 100, 200, 20);
+            ctx.stroke();
+        }
         function clearRect() {
             var theCanvas = document.getElementById("canvas");
             var ctx = theCanvas.getContext("2d");
@@ -89,7 +98,13 @@
 
 	        ctx.clearRect(100, 100, 50, 50);
         }
+        function rotateRect() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
 
+            ctx.rotate(20 * Math.PI / 180);
+            ctx.fillRect(50, 20, 100, 50);
+        }
         function canvasApp() {
             if (!Modernizr.canvas) {
                 return;
@@ -99,7 +114,9 @@
 			//displayImage();
             //drawLine();
             //drawBezier();
-            clearRect();
+            //drawQuadraticCurve();
+            //clearRect();
+            rotateRect();
         }
     </script>
 </head>

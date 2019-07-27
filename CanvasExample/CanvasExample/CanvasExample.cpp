@@ -87,6 +87,13 @@ void drawLine()
 	ctx.beginPath();
 	ctx.lineWidth = 10.0;
 	ctx.lineCap = LineCap::round;
+
+	LineCap cap = ctx.lineCap; // testing getter
+	if (cap == LineCap::round)
+		std::cout << "cap == LineCap::round\n";
+	else
+		std::cout << "Error:cap != LineCap::round\n";
+
 	ctx.moveTo(20, 20);
 	ctx.lineTo(200, 20);
 	ctx.stroke();
@@ -94,7 +101,6 @@ void drawLine()
 	ctx.savePng("c:\\temp\\drawLine.png");
 }
 
-// Draw line with a round cap
 void drawBezier()
 {
 	using namespace canvas;
@@ -107,6 +113,20 @@ void drawBezier()
 	ctx.stroke();
 
 	ctx.savePng("c:\\temp\\drawBezier.png");
+}
+
+void drawQuadraticCurve()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.beginPath();
+	ctx.moveTo(20, 20);
+	ctx.quadraticCurveTo(20, 100, 200, 20);
+	ctx.stroke();
+
+	ctx.savePng("c:\\temp\\drawQuadraticCurve.png");
 }
 
 void clearRect()
@@ -125,6 +145,19 @@ void clearRect()
 	ctx.savePng("c:\\temp\\clearRect.png");
 }
 
+void rotateRect()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	double PI = 3.14159265359;
+	ctx.rotate(20 * PI / 180);
+	ctx.fillRect(50, 20, 100, 50);
+
+	ctx.savePng("c:\\temp\\rotateRect.png");
+}
+
 int main()
 {
 	displayText();
@@ -132,7 +165,9 @@ int main()
 	//displayImage();
 	//drawLine();
 	//drawBezier();
+	//drawQuadraticCurve();
 	//clearRect();
+	//rotateRect();
 
 	std::cout << "Done!\n";
 }

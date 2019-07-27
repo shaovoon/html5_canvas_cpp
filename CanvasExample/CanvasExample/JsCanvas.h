@@ -3,8 +3,9 @@
 // use it at your risk!
 
 // Release log
-// v0.2.0: Setters converted to properties
 // v0.1.0: first release
+// v0.2.0: Setters converted to properties
+// v0.3.0: Add getter of basic types
 
 #pragma once
 #include <string>
@@ -251,6 +252,33 @@ namespace canvas
 				ctx.lineCap = UTF8ToString($1);
 				}, m_Name.c_str(), cairo_cap);
 		}
+		
+		operator LineCap()
+		{
+			int cap_val = EM_ASM_INT({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				if(ctx.lineCap == 'butt')
+					return 0;
+				else if(ctx.lineCap == 'round')
+					return 1;
+				else if(ctx.lineCap == 'square')
+					return 2;
+
+				return 0;
+				}, m_Name.c_str());
+
+			LineCap cap = LineCap::butt;
+			if (cap_val == 0)
+				cap = LineCap::butt;
+			else if (cap_val == 1)
+				cap = LineCap::round;
+			else if (cap_val == 2)
+				cap = LineCap::square;
+
+			return cap;
+		}
+
 	private:
 		// remove copy constructor and assignment operator
 		LineCapProperty(const LineCapProperty& other) = delete;
@@ -285,6 +313,32 @@ namespace canvas
 				ctx.lineJoin = UTF8ToString($1);
 				}, m_Name.c_str(), cairo_join);
 		}
+		operator LineJoin()
+		{
+			int join_val = EM_ASM_INT({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				if(ctx.lineJoin == 'miter')
+					return 0;
+				else if(ctx.lineJoin == 'round')
+					return 1;
+				else if(ctx.lineJoin == 'bevel')
+					return 2;
+				
+				}, m_Name.c_str());
+				
+			LineJoin join = LineJoin::miter;
+
+			if (join_val == 0)
+				join = LineJoin::miter;
+			else if (join_val == 1)
+				join = LineJoin::round;
+			else if (join_val == 2)
+				join = LineJoin::bevel;
+
+			return join;
+		}
+
 	private:
 		// remove copy constructor and assignment operator
 		LineJoinProperty(const LineJoinProperty& other) = delete;
@@ -310,6 +364,14 @@ namespace canvas
 
 				ctx.lineWidth = $1;
 				}, m_Name.c_str(), width);
+		}
+		operator double()
+		{
+			return EM_ASM_DOUBLE({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				return ctx.lineWidth;
+				}, m_Name.c_str());
 		}
 	private:
 		// remove copy constructor and assignment operator
@@ -337,6 +399,15 @@ namespace canvas
 				ctx.miterLimit = limit;
 				}, m_Name.c_str(), limit);
 		}
+		operator double()
+		{
+			return EM_ASM_DOUBLE({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				return ctx.miterLimit;
+				}, m_Name.c_str());
+		}
+
 	private:
 		// remove copy constructor and assignment operator
 		MiterLimitProperty(const MiterLimitProperty& other) = delete;

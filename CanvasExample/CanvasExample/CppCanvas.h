@@ -3,8 +3,9 @@
 // use it at your risk!
 
 // Release log
-// v0.2.0: Setters converted to properties
 // v0.1.0: first release
+// v0.2.0: Setters converted to properties
+// v0.3.0: Add getter of basic types
 
 #pragma once
 #include <cairo.h>
@@ -264,6 +265,20 @@ namespace canvas
 
 			cairo_set_line_cap(cr, cairo_cap);
 		}
+		operator LineCap()
+		{
+			cairo_line_cap_t cairo_cap = cairo_get_line_cap(cr);
+			LineCap cap = LineCap::butt;
+
+			if (cairo_cap == CAIRO_LINE_CAP_BUTT)
+				cap = LineCap::butt;
+			else if (cairo_cap == CAIRO_LINE_CAP_ROUND)
+				cap = LineCap::round;
+			else if (cairo_cap == CAIRO_LINE_CAP_SQUARE)
+				cap = LineCap::square;
+
+			return cap;
+		}
 	private:
 		// remove copy constructor and assignment operator
 		LineCapProperty(const LineCapProperty& other) = delete;
@@ -294,6 +309,20 @@ namespace canvas
 
 			cairo_set_line_join(cr, cairo_join);
 		}
+		operator LineJoin()
+		{
+			cairo_line_join_t cairo_join = cairo_get_line_join(cr);
+			LineJoin join = LineJoin::miter;
+
+			if (cairo_join == CAIRO_LINE_JOIN_MITER)
+				join = LineJoin::miter;
+			else if (cairo_join == CAIRO_LINE_JOIN_ROUND)
+				join = LineJoin::round;
+			else if (cairo_join == CAIRO_LINE_JOIN_BEVEL)
+				join = LineJoin::bevel;
+
+			return join;
+		}
 	private:
 		// remove copy constructor and assignment operator
 		LineJoinProperty(const LineJoinProperty& other) = delete;
@@ -315,6 +344,10 @@ namespace canvas
 		void operator=(double width)
 		{
 			cairo_set_line_width(cr, width);
+		}
+		operator double()
+		{
+			return cairo_get_line_width(cr);
 		}
 	private:
 		// remove copy constructor and assignment operator
@@ -338,6 +371,12 @@ namespace canvas
 		{
 			cairo_set_miter_limit(cr, limit);
 		}
+
+		operator double()
+		{
+			return cairo_get_miter_limit(cr);
+		}
+
 	private:
 		// remove copy constructor and assignment operator
 		MiterLimitProperty(const MiterLimitProperty& other) = delete;
