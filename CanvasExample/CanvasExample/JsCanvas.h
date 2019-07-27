@@ -46,6 +46,10 @@ namespace canvas
 		}
 		~ImageData()
 		{
+			EM_ASM_({
+				remove_imgdata(UTF8ToString($0));
+
+			}, m_Name.c_str());
 		}
 		const char* name() const
 		{
@@ -76,6 +80,13 @@ namespace canvas
 		Gradient(Gradient&& other)
 		{
 			m_Name = std::move(other.m_Name);
+		}
+		~Gradient()
+		{
+			EM_ASM_({
+				remove_gradient(UTF8ToString($0));
+
+				}, m_Name.c_str());
 		}
 		void addColorStop(double stop, const char* color)
 		{
@@ -432,6 +443,13 @@ namespace canvas
 			lineJoin.init(name);
 			lineWidth.init(name);
 			miterLimit.init(name);
+		}
+		~Canvas()
+		{
+			EM_ASM_({
+				remove_canvas(UTF8ToString($0));
+
+			}, m_Name.c_str());
 		}
 
 		void fillRect(double x, double y, double width, double height)
