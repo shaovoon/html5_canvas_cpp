@@ -124,6 +124,60 @@ namespace canvas
 		cairo_pattern_t* m_Pattern;
 	};
 
+	enum class RepeatPattern
+	{
+		repeat,
+		no_repeat
+	};
+
+	class Pattern
+	{
+	public:
+		Pattern(cairo_surface_t* surface, cairo_pattern_t* pattern, unsigned char* pixel) 
+			: m_Surface(surface), m_Pattern(pattern), m_Pixel(pixel) {}
+		Pattern(Pattern&& other) noexcept
+		{
+			m_Surface = other.m_Surface;
+			other.m_Surface = nullptr;
+			m_Pattern = other.m_Pattern;
+			other.m_Pattern = nullptr;
+			m_Pixel = other.m_Pixel;
+			other.m_Pixel = nullptr;
+		}
+
+		~Pattern()
+		{
+			if (m_Pattern)
+			{
+				cairo_pattern_destroy(m_Pattern);
+				m_Pattern = nullptr;
+			}
+			if (m_Surface)
+			{
+				cairo_surface_destroy(m_Surface);
+				m_Surface = nullptr;
+			}
+			if (m_Pixel)
+			{
+				delete[] m_Pixel;
+				m_Pixel = nullptr;
+			}
+		}
+
+		cairo_pattern_t* getPattern() const
+		{
+			return m_Pattern;
+		}
+	private:
+		// remove copy constructor and assignment operator
+		Pattern(const Pattern& other) = delete;
+		void operator=(const Pattern& other) = delete;
+
+		cairo_surface_t* m_Surface;
+		cairo_pattern_t* m_Pattern;
+		unsigned char* m_Pixel;
+	};
+
 	class FillStyleProperty
 	{
 	public:
@@ -152,6 +206,10 @@ namespace canvas
 		void operator=(const canvas::Gradient& gradient)
 		{
 			cairo_set_source(cr, gradient.getPattern());
+		}
+		void operator=(const canvas::Pattern& pat)
+		{
+			cairo_set_source(cr, pat.getPattern());
 		}
 	private:
 		// remove copy constructor and assignment operator
@@ -189,6 +247,10 @@ namespace canvas
 		void operator=(const canvas::Gradient& gradient)
 		{
 			cairo_set_source(cr, gradient.getPattern());
+		}
+		void operator=(const canvas::Pattern& pat)
+		{
+			cairo_set_source(cr, pat.getPattern());
 		}
 	private:
 		// remove copy constructor and assignment operator
@@ -462,6 +524,11 @@ namespace canvas
 			cairo_stroke(cr);
 		}
 
+		void rect(double x, double y, double width, double height)
+		{
+			cairo_rectangle(cr, x, y, width, height);
+		}
+
 		void beginPath()
 		{
 			cairo_new_path(cr);
@@ -624,6 +691,53 @@ namespace canvas
 		Gradient createRadialGradient(const char* name, double x0, double y0, double r0, double x1, double y1, double r1)
 		{
 			return std::move(Gradient(cairo_pattern_create_radial(x0, y0, r0, x1, y1, r1)));
+		}
+
+		Pattern createPattern(const char* name, const char* image_file, RepeatPattern rp)
+		{
+			int width, height, channels;
+			//stbi_set_flip_vertically_on_load(true);
+			unsigned char* image = stbi_load(image_file,
+				&width,
+				&height,
+				&channels,
+				STBI_rgb);
+
+			unsigned char* dest_pixel = new unsigned char[width * height * 4];
+			for (int y = 0; y < height; ++y)
+			{
+				for (int x = 0; x < width; ++x)
+				{
+					int index = (y * width + x) * 4;
+					int src_index = (y * width + x) * 3;
+					dest_pixel[index] = image[src_index + 2];
+					dest_pixel[index + 1] = image[src_index + 1];
+					dest_pixel[index + 2] = image[src_index + 0];
+					dest_pixel[index + 3] = 0xff;
+				}
+
+			}
+
+			cairo_surface_t* surface = 
+				cairo_image_surface_create_for_data(dest_pixel,
+					CAIRO_FORMAT_ARGB32,
+					width,
+					height,
+					width * 4);
+
+			cairo_pattern_t* pattern =
+				cairo_pattern_create_for_surface(surface);
+
+
+			cairo_extend_t extend = CAIRO_EXTEND_REPEAT;
+			if (rp == RepeatPattern::no_repeat)
+				extend = CAIRO_EXTEND_NONE;
+
+			cairo_pattern_set_extend(pattern, extend);
+
+			stbi_image_free((void*)image);
+
+			return std::move(Pattern(surface, pattern, dest_pixel));
 		}
 
 		// https://cairographics.org/manual/cairo-Image-Surfaces.html

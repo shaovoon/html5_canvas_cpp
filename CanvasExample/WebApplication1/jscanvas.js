@@ -1,5 +1,6 @@
 ﻿var canvas_dict = {};
 var gradient_dict = {};
+var pattern_dict = {};
 var imgdata_dict = {};
 
 function add_canvas(name)
@@ -28,6 +29,18 @@ function remove_gradient(name) {
 
 function get_gradient(name) {
     return gradient_dict[name];
+}
+
+function add_pattern(name, pat) {
+    pattern_dict[name] = pat;
+}
+
+function remove_pattern(name) {
+    delete pattern_dict[name];
+}
+
+function get_pattern(name) {
+    return pattern_dict[name];
 }
 
 function add_imgdata(name, imgdata) {

@@ -116,6 +116,16 @@
             ctx.restore();
             ctx.fillRect(50, 20, 100, 50);
         }
+        function repeatPattern() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            var img = document.getElementById("lamp");
+            var pat = ctx.createPattern(img, "repeat");
+            ctx.rect(0, 0, 150, 100);
+            ctx.fillStyle = pat;
+            ctx.fill();
+        }
 
         function canvasApp() {
             if (!Modernizr.canvas) {
@@ -129,7 +139,8 @@
             //drawQuadraticCurve();
             //clearRect();
             //rotateRect();
-            saveRestore();
+            //saveRestore();
+            repeatPattern();
         }
     </script>
 </head>
@@ -138,6 +149,7 @@
         <canvas id="canvas" width="320" height="280"> Your browser does not support HTML5 Canvas. </canvas>
     </div>
     <div style="display: none;"><img src="yes.jpg" id="yes_image"></div>
+    <div style="display: none;"><img src="img_lamp.jpg" id="lamp"></div>
 </body>
 </html>
 

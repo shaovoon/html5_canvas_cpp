@@ -119,6 +119,39 @@ namespace canvas
 		std::string m_Name;
 	};
 
+	enum class RepeatPattern
+	{
+		repeat,
+		no_repeat
+	};
+
+	class Pattern
+	{
+	public:
+		Pattern(const char* name) : m_Name(name) {}
+		Pattern(Pattern&& other)
+		{
+			m_Name = std::move(other.m_Name);
+		}
+		~Pattern()
+		{
+			EM_ASM_({
+				remove_pattern(UTF8ToString($0));
+
+				}, m_Name.c_str());
+		}
+		const char* getName() const
+		{
+			return m_Name.c_str();
+		}
+	private:
+		// remove copy constructor and assignment operator
+		Pattern(const Pattern& other) = delete;
+		void operator=(const Pattern& other) = delete;
+	
+		std::string m_Name;
+	};
+
 	class FillStyleProperty
 	{
 	public:
@@ -156,6 +189,14 @@ namespace canvas
 
 				ctx.fillStyle = get_gradient(UTF8ToString($1));
 				}, m_Name.c_str(), gradient.getName());
+		}
+		void operator=(const canvas::Pattern& pat)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.fillStyle = get_pattern(UTF8ToString($1));
+				}, m_Name.c_str(), pat.getName());
 		}
 	private:
 		// remove copy constructor and assignment operator
@@ -202,6 +243,14 @@ namespace canvas
 
 				ctx.strokeStyle = get_gradient(UTF8ToString($1));
 				}, m_Name.c_str(), gradient.getName());
+		}
+		void operator=(const canvas::Pattern& pat)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.strokeStyle = get_pattern(UTF8ToString($1));
+				}, m_Name.c_str(), pat.getName());
 		}
 	private:
 		// remove copy constructor and assignment operator
@@ -497,6 +546,15 @@ namespace canvas
 				}, m_Name.c_str(), text, x, y);
 		}
 		
+		void rect(double x, double y, double width, double height)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.rect($1, $2, $3, $4);
+				}, m_Name.c_str(), x, y, width, height);
+		}
+
 		void beginPath()
 		{
 			EM_ASM_({
@@ -656,6 +714,22 @@ namespace canvas
 				}, m_Name.c_str(), x0, y0, r0, x1, y1, r1, name);
 			
 			return std::move(Gradient(name));
+		}
+
+		Pattern createPattern(const char* name, const char* image_file, RepeatPattern rp)
+		{
+			const char* rep = "repeat";
+			if(rp == RepeatPattern::no_repeat)
+				rep = "no-repeat";
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				var img = document.getElementById(UTF8ToString($3));
+				var pat = ctx.createPattern(img, UTF8ToString($2));
+				add_pattern(UTF8ToString($1), pat);
+				}, m_Name.c_str(), name, rep, image_file);
+			
+			return std::move(Pattern(name));
 		}
 
 		void drawImage(const char* image, double x, double y)

@@ -71,7 +71,8 @@ void displayImage()
 #ifdef __EMSCRIPTEN__
 	ctx.drawImage("yes_image", 10.0, 10.0);
 #else
-	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
+	//ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
+	ctx.drawImage("D:\\GitHub\\html5_canvas_cpp\\CanvasExample\\WebApplication1\\img_lamp.jpg", 10.0, 10.0);
 #endif
 
 	ctx.savePng("c:\\temp\\displayImage.png");
@@ -175,6 +176,23 @@ void saveRestore()
 	ctx.savePng("c:\\temp\\saveRestore.png");
 }
 
+void repeatPattern()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+#ifdef __EMSCRIPTEN__
+	auto pat = ctx.createPattern("pat", "lamp", RepeatPattern::repeat);
+#else
+	auto pat = ctx.createPattern("pat", "D:\\GitHub\\html5_canvas_cpp\\CanvasExample\\WebApplication1\\img_lamp.jpg", RepeatPattern::repeat);
+#endif
+	ctx.rect(0, 0, 150, 100);
+	ctx.fillStyle = pat;
+	ctx.fill();
+
+	ctx.savePng("c:\\temp\\repeatPattern.png");
+}
+
 int main()
 {
 	//displayText();
@@ -185,7 +203,8 @@ int main()
 	//drawQuadraticCurve();
 	//clearRect();
 	//rotateRect();
-	saveRestore();
+	//saveRestore();
+	repeatPattern();
 
 	std::cout << "Done!\n";
 }
