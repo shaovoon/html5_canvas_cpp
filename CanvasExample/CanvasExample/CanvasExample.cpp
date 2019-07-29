@@ -214,6 +214,19 @@ void compositeOp()
 	ctx.savePng("c:\\temp\\compositeOp.png");
 }
 
+void pointInPath()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.rect(20, 20, 150, 100);
+	if (ctx.isPointInPath(20, 50)) {
+		ctx.stroke();
+	};
+
+	ctx.savePng("c:\\temp\\pointInPath.png");
+}
 
 int main()
 {
@@ -227,7 +240,8 @@ int main()
 	//rotateRect();
 	//saveRestore();
 	//repeatPattern();
-	compositeOp();
+	//compositeOp();
+	pointInPath();
 
 	std::cout << "Done!\n";
 }

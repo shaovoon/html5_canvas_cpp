@@ -647,6 +647,17 @@ namespace canvas
 				ctx.closePath();
 				}, m_Name.c_str());
 		}
+		
+		bool isPointInPath(double x, double y)
+		{
+			int ret = EM_ASM_INT({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				return ctx.isPointInPath($1, $2);
+				}, m_Name.c_str(), x, y);
+				
+			return (ret > 0);
+		}
 
 		void moveTo(double x, double y)
 		{

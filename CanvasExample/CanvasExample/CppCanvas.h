@@ -578,7 +578,7 @@ namespace canvas
 			cairo_fill(cr);
 		}
 
-		void clearRect(double x, double y, double width, double height) // TODO: to be implemented
+		void clearRect(double x, double y, double width, double height)
 		{
 			ImageData imgData = createImageData("imgData", width, height);
 
@@ -631,6 +631,11 @@ namespace canvas
 		void closePath()
 		{
 			cairo_close_path(cr);
+		}
+
+		bool isPointInPath(double x, double y)
+		{
+			return (cairo_in_stroke(cr, x, y) > 0);
 		}
 
 		void moveTo(double x, double y)

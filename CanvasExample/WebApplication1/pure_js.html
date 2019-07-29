@@ -142,6 +142,30 @@
             ctx.fillStyle = "blue";
             ctx.fillRect(180, 50, 75, 50);
         }
+        function globalAlpha() { // not implemented yet
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(20, 20, 75, 50);
+
+            // Turn transparency on
+            ctx.globalAlpha = 0.2;
+            ctx.fillStyle = "blue";
+            ctx.fillRect(50, 50, 75, 50);
+            ctx.fillStyle = "green";
+            ctx.fillRect(80, 80, 75, 50);
+        }
+        function pointInPath() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.rect(20, 20, 150, 100);
+            if (ctx.isPointInPath(20, 50)) {
+                ctx.stroke();
+            };
+        }
+
 
         function canvasApp() {
             if (!Modernizr.canvas) {
@@ -157,7 +181,9 @@
             //rotateRect();
             //saveRestore();
             //repeatPattern();
-            compositeOp();
+            //compositeOp();
+            //globalAlpha();
+            pointInPath();
         }
     </script>
 </head>
