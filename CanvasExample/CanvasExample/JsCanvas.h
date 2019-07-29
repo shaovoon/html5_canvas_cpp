@@ -711,6 +711,24 @@ namespace canvas
 			
 			return std::move(ImageData(name, width, height));
 		}
+		
+		void save()
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.save();
+				}, m_Name.c_str());
+		}
+
+		void restore()
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.restore();
+				}, m_Name.c_str());
+		}
 
 		bool savePng(const char* file)
 		{

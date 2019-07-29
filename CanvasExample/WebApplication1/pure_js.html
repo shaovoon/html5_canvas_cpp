@@ -105,6 +105,18 @@
             ctx.rotate(20 * Math.PI / 180);
             ctx.fillRect(50, 20, 100, 50);
         }
+        function saveRestore() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+            ctx.save();
+
+            ctx.rotate(20 * Math.PI / 180);
+            ctx.fillRect(50, 20, 100, 50);
+
+            ctx.restore();
+            ctx.fillRect(50, 20, 100, 50);
+        }
+
         function canvasApp() {
             if (!Modernizr.canvas) {
                 return;
@@ -116,7 +128,8 @@
             //drawBezier();
             //drawQuadraticCurve();
             //clearRect();
-            rotateRect();
+            //rotateRect();
+            saveRestore();
         }
     </script>
 </head>

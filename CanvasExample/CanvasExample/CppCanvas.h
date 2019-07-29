@@ -684,6 +684,16 @@ namespace canvas
 			return std::move(imgData);
 		}
 
+		void save()
+		{
+			cairo_save(cr);
+		}
+
+		void restore()
+		{
+			cairo_restore(cr);
+		}
+
 		bool savePng(const char* file)
 		{
 			cairo_status_t status = cairo_surface_write_to_png(surface, file);

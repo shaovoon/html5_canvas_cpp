@@ -158,9 +158,26 @@ void rotateRect()
 	ctx.savePng("c:\\temp\\rotateRect.png");
 }
 
+void saveRestore()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+	ctx.save();
+
+	double PI = 3.14159265359;
+	ctx.rotate(20 * PI / 180);
+	ctx.fillRect(50, 20, 100, 50);
+
+	ctx.restore();
+	ctx.fillRect(50, 20, 100, 50);
+
+	ctx.savePng("c:\\temp\\saveRestore.png");
+}
+
 int main()
 {
-	displayText();
+	//displayText();
 	//displayTextOutline();
 	//displayImage();
 	//drawLine();
@@ -168,6 +185,7 @@ int main()
 	//drawQuadraticCurve();
 	//clearRect();
 	//rotateRect();
+	saveRestore();
 
 	std::cout << "Done!\n";
 }
