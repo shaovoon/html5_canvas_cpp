@@ -78,6 +78,7 @@ namespace canvas
 		int m_Width;
 		int m_Height;
 	};
+
 	class Gradient
 	{
 	public:
@@ -176,6 +177,98 @@ namespace canvas
 		cairo_surface_t* m_Surface;
 		cairo_pattern_t* m_Pattern;
 		unsigned char* m_Pixel;
+	};
+
+	enum class GlobalCompositeOperationType
+	{
+		source_over,
+		source_atop,
+		source_in,
+		source_out,
+		destination_over,
+		destination_atop,
+		destination_in,
+		destination_out,
+		lighter,
+		copy,
+		exclusive_or,
+	};
+
+	class GlobalCompositeOperationProperty
+	{
+	public:
+		GlobalCompositeOperationProperty() 
+			: cr(nullptr) {}
+
+		void init(cairo_t* ptr)
+		{
+			cr = ptr;
+		}
+
+		void operator=(const char* op)
+		{
+			std::string s = op;
+			cairo_operator_t cop = CAIRO_OPERATOR_IN;
+			if (s == "source-over")
+				cop = CAIRO_OPERATOR_OVER;
+			else if (s == "source-atop")
+				cop = CAIRO_OPERATOR_ATOP;
+			else if (s == "source-in")
+				cop = CAIRO_OPERATOR_IN;
+			else if (s == "source-out")
+				cop = CAIRO_OPERATOR_OUT;
+			else if (s == "destination-over")
+				cop = CAIRO_OPERATOR_DEST_OVER;
+			else if (s == "destination-atop")
+				cop = CAIRO_OPERATOR_DEST_ATOP;
+			else if (s == "destination-in")
+				cop = CAIRO_OPERATOR_DEST_IN;
+			else if (s == "destination-out")
+				cop = CAIRO_OPERATOR_DEST_OUT;
+			else if (s == "lighter")
+				cop = CAIRO_OPERATOR_LIGHTEN;
+			else if (s == "copy")
+				cop = CAIRO_OPERATOR_SOURCE;
+			else if (s == "xor")
+				cop = CAIRO_OPERATOR_XOR;
+
+			cairo_set_operator(cr, cop);
+		}
+		void operator=(GlobalCompositeOperationType type)
+		{
+			cairo_operator_t cop = CAIRO_OPERATOR_IN;
+			if (type == GlobalCompositeOperationType::source_over)
+				cop = CAIRO_OPERATOR_OVER;
+			else if (type == GlobalCompositeOperationType::source_atop)
+				cop = CAIRO_OPERATOR_ATOP;
+			else if (type == GlobalCompositeOperationType::source_in)
+				cop = CAIRO_OPERATOR_IN;
+			else if (type == GlobalCompositeOperationType::source_out)
+				cop = CAIRO_OPERATOR_OUT;
+			else if (type == GlobalCompositeOperationType::destination_over)
+				cop = CAIRO_OPERATOR_DEST_OVER;
+			else if (type == GlobalCompositeOperationType::destination_atop)
+				cop = CAIRO_OPERATOR_DEST_ATOP;
+			else if (type == GlobalCompositeOperationType::destination_in)
+				cop = CAIRO_OPERATOR_DEST_IN;
+			else if (type == GlobalCompositeOperationType::destination_out)
+				cop = CAIRO_OPERATOR_DEST_OUT;
+			else if (type == GlobalCompositeOperationType::lighter)
+				cop = CAIRO_OPERATOR_LIGHTEN;
+			else if (type == GlobalCompositeOperationType::copy)
+				cop = CAIRO_OPERATOR_SOURCE;
+			else if (type == GlobalCompositeOperationType::exclusive_or)
+				cop = CAIRO_OPERATOR_XOR;
+
+			cairo_set_operator(cr, cop);
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		GlobalCompositeOperationProperty(const GlobalCompositeOperationProperty& other) = delete;
+		void operator=(const GlobalCompositeOperationProperty& other) = delete;
+
+		cairo_t* cr;
 	};
 
 	class FillStyleProperty
@@ -462,6 +555,7 @@ namespace canvas
 			lineJoin.init(cr);
 			lineWidth.init(cr);
 			miterLimit.init(cr);
+			globalCompositeOperation.init(cr);
 		}
 
 		~Canvas()
@@ -821,7 +915,7 @@ namespace canvas
 		LineJoinProperty lineJoin;
 		LineWidthProperty lineWidth;
 		MiterLimitProperty miterLimit;
-
+		GlobalCompositeOperationProperty globalCompositeOperation;
 	private:
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;

@@ -126,6 +126,22 @@
             ctx.fillStyle = pat;
             ctx.fill();
         }
+        function compositeOp() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(20, 20, 75, 50);
+            ctx.globalCompositeOperation = "source-over";
+            ctx.fillStyle = "blue";
+            ctx.fillRect(50, 50, 75, 50);
+
+            ctx.fillStyle = "red";
+            ctx.fillRect(150, 20, 75, 50);
+            ctx.globalCompositeOperation = "destination-over";
+            ctx.fillStyle = "blue";
+            ctx.fillRect(180, 50, 75, 50);
+        }
 
         function canvasApp() {
             if (!Modernizr.canvas) {
@@ -140,7 +156,8 @@
             //clearRect();
             //rotateRect();
             //saveRestore();
-            repeatPattern();
+            //repeatPattern();
+            compositeOp();
         }
     </script>
 </head>

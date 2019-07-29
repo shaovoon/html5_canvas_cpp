@@ -193,6 +193,28 @@ void repeatPattern()
 	ctx.savePng("c:\\temp\\repeatPattern.png");
 }
 
+void compositeOp()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.fillStyle = "#ff0000";
+	ctx.fillRect(20, 20, 75, 50);
+	ctx.globalCompositeOperation = "source-over";
+	ctx.fillStyle = "#0000ff";
+	ctx.fillRect(50, 50, 75, 50);
+
+	ctx.fillStyle = "#ff0000";
+	ctx.fillRect(150, 20, 75, 50);
+	ctx.globalCompositeOperation = "destination-over";
+	ctx.fillStyle = "#0000ff";
+	ctx.fillRect(180, 50, 75, 50);
+
+	ctx.savePng("c:\\temp\\compositeOp.png");
+}
+
+
 int main()
 {
 	//displayText();
@@ -204,7 +226,8 @@ int main()
 	//clearRect();
 	//rotateRect();
 	//saveRestore();
-	repeatPattern();
+	//repeatPattern();
+	compositeOp();
 
 	std::cout << "Done!\n";
 }

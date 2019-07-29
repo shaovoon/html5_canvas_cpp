@@ -152,6 +152,80 @@ namespace canvas
 		std::string m_Name;
 	};
 
+	enum class GlobalCompositeOperationType
+	{
+		source_over,
+		source_atop,
+		source_in,
+		source_out,
+		destination_over,
+		destination_atop,
+		destination_in,
+		destination_out,
+		lighter,
+		copy,
+		exclusive_or,
+	};
+
+	class GlobalCompositeOperationProperty
+	{
+	public:
+		GlobalCompositeOperationProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(const char* op)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.globalCompositeOperation = UTF8ToString($1);
+				}, m_Name.c_str(), op);
+		}
+		void operator=(GlobalCompositeOperationType type)
+		{
+			const char* op = "source-over";
+			if (type == GlobalCompositeOperationType::source_over)
+				op = "source-over";
+			else if (type == GlobalCompositeOperationType::source_atop)
+				op = "source-atop";
+			else if (type == GlobalCompositeOperationType::source_in)
+				op = "source-in";
+			else if (type == GlobalCompositeOperationType::source_out)
+				op = "source-out";
+			else if (type == GlobalCompositeOperationType::destination_over)
+				op = "destination-over";
+			else if (type == GlobalCompositeOperationType::destination_atop)
+				op = "destination-atop";
+			else if (type == GlobalCompositeOperationType::destination_in)
+				op = "destination-in";
+			else if (type == GlobalCompositeOperationType::destination_out)
+				op = "destination-out";
+			else if (type == GlobalCompositeOperationType::lighter)
+				op = "lighter";
+			else if (type == GlobalCompositeOperationType::copy)
+				op = "copy";
+			else if (type == GlobalCompositeOperationType::exclusive_or)
+				op = "xor";
+
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.globalCompositeOperation = UTF8ToString($1);
+				}, m_Name.c_str(), op);
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		GlobalCompositeOperationProperty(const GlobalCompositeOperationProperty& other) = delete;
+		void operator=(const GlobalCompositeOperationProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
 	class FillStyleProperty
 	{
 	public:
@@ -492,6 +566,7 @@ namespace canvas
 			lineJoin.init(name);
 			lineWidth.init(name);
 			miterLimit.init(name);
+			globalCompositeOperation.init(name);
 		}
 		~Canvas()
 		{
@@ -817,7 +892,7 @@ namespace canvas
 		LineJoinProperty lineJoin;
 		LineWidthProperty lineWidth;
 		MiterLimitProperty miterLimit;
-
+		GlobalCompositeOperationProperty globalCompositeOperation;
 	private:
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;
