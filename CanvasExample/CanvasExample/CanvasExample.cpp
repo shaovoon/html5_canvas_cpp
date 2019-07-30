@@ -25,9 +25,9 @@ void displayText()
 
 	// Create gradient
 	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
-	gradient.addColorStop(0.0, "#ff00ff");
-	gradient.addColorStop(0.5, "#0000ff");
-	gradient.addColorStop(1.0, "#ff0000");
+	gradient.addColorStop(0.0, "magenta");
+	gradient.addColorStop(0.5, "blue");
+	gradient.addColorStop(1.0, "red");
 	// Fill with gradient
 	ctx.fillStyle = gradient;
 	ctx.fillText("Big smile!", 10, 90);
@@ -50,9 +50,9 @@ void displayTextOutline()
 
 	// Create gradient
 	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
-	gradient.addColorStop(0.0, "#ff00ff");
-	gradient.addColorStop(0.5, "#0000ff");
-	gradient.addColorStop(1.0, "#ff0000");
+	gradient.addColorStop(0.0, "magenta");
+	gradient.addColorStop(0.5, "blue");
+	gradient.addColorStop(1.0, "red");
 
 	// Fill with gradient
 	ctx.strokeStyle = gradient;
@@ -137,8 +137,8 @@ void clearRect()
 	Canvas ctx("canvas", 320, 280);
 
 	auto grad = ctx.createLinearGradient("grad", 0.0, 0.0, 320.0, 0.0);
-	grad.addColorStop(0.0, "#ff0000");
-	grad.addColorStop(1.0, "#0000ff");
+	grad.addColorStop(0.0, "red");
+	grad.addColorStop(1.0, "blue");
 	ctx.fillStyle = grad;
 	ctx.fillRect(0.0, 0.0, 320.0, 280.0);
 
@@ -199,16 +199,16 @@ void compositeOp()
 
 	Canvas ctx("canvas", 320, 280);
 
-	ctx.fillStyle = "#ff0000";
+	ctx.fillStyle = "red";
 	ctx.fillRect(20, 20, 75, 50);
 	ctx.globalCompositeOperation = "source-over";
-	ctx.fillStyle = "#0000ff";
+	ctx.fillStyle = "blue";
 	ctx.fillRect(50, 50, 75, 50);
 
-	ctx.fillStyle = "#ff0000";
+	ctx.fillStyle = "red";
 	ctx.fillRect(150, 20, 75, 50);
 	ctx.globalCompositeOperation = "destination-over";
-	ctx.fillStyle = "#0000ff";
+	ctx.fillStyle = "blue";
 	ctx.fillRect(180, 50, 75, 50);
 
 	ctx.savePng("c:\\temp\\compositeOp.png");
@@ -228,6 +228,37 @@ void pointInPath()
 	ctx.savePng("c:\\temp\\pointInPath.png");
 }
 
+void shadowFillRect()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.shadowOffsetX = 10;
+	ctx.shadowOffsetY = 10;
+	ctx.shadowColor = 0x80000000;
+	//ctx.shadowColor = "#80000000";
+	ctx.fillStyle = "red";
+	ctx.fillRect(20, 20, 100, 80);
+
+	ctx.savePng("c:\\temp\\shadowFillRect.png");
+}
+
+void shadowFillText()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.shadowOffsetX = 1;
+	ctx.shadowOffsetY = 2;
+	ctx.shadowColor = 0x60000000;
+	ctx.font = "30px Georgia";
+	ctx.fillText("Hello World!", 10, 50);
+
+	ctx.savePng("c:\\temp\\shadowFillText.png");
+}
+
 int main()
 {
 	//displayText();
@@ -241,7 +272,9 @@ int main()
 	//saveRestore();
 	//repeatPattern();
 	//compositeOp();
-	pointInPath();
+	//pointInPath();
+	shadowFillRect();
+	//shadowFillText();
 
 	std::cout << "Done!\n";
 }

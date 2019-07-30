@@ -530,7 +530,7 @@ namespace canvas
 			EM_ASM_({
 				var ctx = get_canvas(UTF8ToString($0));
 
-				ctx.miterLimit = limit;
+				ctx.miterLimit = $1;
 				}, m_Name.c_str(), limit);
 		}
 		operator double()
@@ -546,6 +546,121 @@ namespace canvas
 		// remove copy constructor and assignment operator
 		MiterLimitProperty(const MiterLimitProperty& other) = delete;
 		void operator=(const MiterLimitProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class ShadowOffsetXProperty
+	{
+	public:
+		ShadowOffsetXProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(double offset)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.shadowOffsetX = $1;
+				}, m_Name.c_str(), offset);
+		}
+
+		operator double()
+		{
+			return EM_ASM_DOUBLE({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				return ctx.shadowOffsetX;
+				}, m_Name.c_str());
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		ShadowOffsetXProperty(const ShadowOffsetXProperty& other) = delete;
+		void operator=(const ShadowOffsetXProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class ShadowOffsetYProperty
+	{
+	public:
+		ShadowOffsetYProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(double offset)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.shadowOffsetY = $1;
+				}, m_Name.c_str(), offset);
+		}
+
+		operator double()
+		{
+			return EM_ASM_DOUBLE({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				return ctx.shadowOffsetY;
+				}, m_Name.c_str());
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		ShadowOffsetYProperty(const ShadowOffsetYProperty& other) = delete;
+		void operator=(const ShadowOffsetYProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
+	class ShadowColorProperty
+	{
+	public:
+		ShadowColorProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(const char* color)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.shadowColor = UTF8ToString($1);
+				}, m_Name.c_str(), color);
+		}
+
+		void operator=(unsigned int color)
+		{
+			unsigned char a = ((color & 0xff000000) >> 24);
+			unsigned char r = ((color & 0xff0000) >> 16);
+			unsigned char g = ((color & 0xff00) >> 8);
+			unsigned char b = (color & 0xff);
+			char buf[300];
+			sprintf(buf, "rgba(%f, %f, %f, %f)", r/255.0, g/255.0, b/255.0, a/255.0);
+			
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.shadowColor = UTF8ToString($1);
+				}, m_Name.c_str(), buf);
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		ShadowColorProperty(const ShadowColorProperty& other) = delete;
+		void operator=(const ShadowColorProperty& other) = delete;
 
 		std::string m_Name;
 	};
@@ -567,6 +682,9 @@ namespace canvas
 			lineWidth.init(name);
 			miterLimit.init(name);
 			globalCompositeOperation.init(name);
+			shadowOffsetX.init(name);
+			shadowOffsetY.init(name);
+			shadowColor.init(name);
 		}
 		~Canvas()
 		{
@@ -904,6 +1022,10 @@ namespace canvas
 		LineWidthProperty lineWidth;
 		MiterLimitProperty miterLimit;
 		GlobalCompositeOperationProperty globalCompositeOperation;
+		ShadowOffsetXProperty shadowOffsetX;
+		ShadowOffsetYProperty shadowOffsetY;
+		ShadowColorProperty shadowColor;
+
 	private:
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;

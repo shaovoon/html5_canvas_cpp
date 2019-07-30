@@ -165,6 +165,26 @@
                 ctx.stroke();
             };
         }
+        function shadowFillRect() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.shadowOffsetX = 10;
+            ctx.shadowOffsetY = 10;
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.fillStyle = "red";
+            ctx.fillRect(20, 20, 100, 80);
+        }
+        function shadowFillText() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 2;
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.font = "30px Georgia";
+            ctx.fillText("Hello World!", 10, 50);
+        }
 
 
         function canvasApp() {
@@ -183,7 +203,9 @@
             //repeatPattern();
             //compositeOp();
             //globalAlpha();
-            pointInPath();
+            //pointInPath();
+            shadowFillRect();
+            //shadowFillText();
         }
     </script>
 </head>

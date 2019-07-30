@@ -11,9 +11,11 @@
 #include <cairo.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#include <unordered_map>
 
 namespace canvas
 {
+
 	enum class LineCap
 	{
 		butt,
@@ -33,7 +35,10 @@ namespace canvas
 		return (unsigned int)((r << 16) | (g << 8) | b);
 	}
 
+	std::unordered_map<std::string, std::string> g_ColorNameMap;
 
+	const char* getColorValue(const char* color_name);
+	void initColorNameMap();
 
 	// https://cairographics.org/manual/cairo-Image-Surfaces.html
 	class ImageData
@@ -100,6 +105,8 @@ namespace canvas
 
 		void addColorStop(double stop, const char* color)
 		{
+			if(color[0] != '#')
+				color = getColorValue(color);
 			unsigned long v = strtoul(color + 1, nullptr, 16);
 			double r = ((v & 0xff0000) >> 16) / 255.0;
 			double g = ((v & 0xff00) >> 8) / 255.0;
@@ -283,6 +290,9 @@ namespace canvas
 
 		void operator=(const char* color)
 		{
+			if (color[0] != '#')
+				color = getColorValue(color);
+
 			unsigned long v = strtoul(color + 1, nullptr, 16);
 			double r = ((v & 0xff0000) >> 16) / 255.0;
 			double g = ((v & 0xff00) >> 8) / 255.0;
@@ -324,6 +334,9 @@ namespace canvas
 
 		void operator=(const char* color)
 		{
+			if (color[0] != '#')
+				color = getColorValue(color);
+
 			unsigned long v = strtoul(color + 1, nullptr, 16);
 			double r = ((v & 0xff0000) >> 16) / 255.0;
 			double g = ((v & 0xff00) >> 8) / 255.0;
@@ -540,6 +553,72 @@ namespace canvas
 		cairo_t* cr;
 	};
 
+	class ShadowOffsetProperty
+	{
+	public:
+		ShadowOffsetProperty() : m_Offset(0.0) {}
+
+		void operator=(double offset)
+		{
+			m_Offset = offset;
+		}
+
+		operator double()
+		{
+			return m_Offset;
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		ShadowOffsetProperty(const ShadowOffsetProperty& other) = delete;
+		void operator=(const ShadowOffsetProperty& other) = delete;
+
+		double m_Offset;
+	};
+
+	class ShadowColorProperty
+	{
+	public:
+		ShadowColorProperty() : m_Color(0) {}
+
+		void operator=(const char* color)
+		{
+			if (color[0] != '#')
+				color = getColorValue(color);
+
+			unsigned long v = strtoul(color + 1, nullptr, 16);
+			unsigned char a = ((v & 0xff000000) >> 24);
+			unsigned char r = ((v & 0xff0000) >> 16);
+			unsigned char g = ((v & 0xff00) >> 8);
+			unsigned char b = (v & 0xff);
+
+			m_Color = (unsigned int)((a << 24) | (r << 16) | (g << 8) | b);
+		}
+
+
+		void operator=(unsigned int color)
+		{
+			m_Color = color;
+		}
+
+		operator unsigned int()
+		{
+			return m_Color;
+		}
+
+		bool isTransparent() const
+		{
+			return (m_Color == 0);
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		ShadowColorProperty(const ShadowColorProperty& other) = delete;
+		void operator=(const ShadowColorProperty& other) = delete;
+
+		unsigned int m_Color;
+	};
+
 	class Canvas
 	{
 	public:
@@ -573,8 +652,18 @@ namespace canvas
 
 		void fillRect(double x, double y, double width, double height)
 		{
+			if (shadowColor.isTransparent() == false)
+			{
+				save();
+
+				setShadowColor();
+
+				cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
+				cairo_fill(cr);
+
+				restore();
+			}
 			cairo_rectangle(cr, x, y, width, height);
-			cairo_stroke_preserve(cr);
 			cairo_fill(cr);
 		}
 
@@ -600,19 +689,52 @@ namespace canvas
 
 		void strokeRect(double x, double y, double width, double height)
 		{
+			if (shadowColor.isTransparent() == false)
+			{
+				save();
+
+				setShadowColor();
+
+				cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
+				cairo_stroke(cr);
+
+				restore();
+			}
 			cairo_rectangle(cr, x, y, width, height);
-			cairo_stroke_preserve(cr);
 			cairo_stroke(cr);
 		}
 
 		void fillText(const char* text, double x, double y)
 		{
+			if (shadowColor.isTransparent() == false)
+			{
+				save();
+
+				setShadowColor();
+
+				cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
+				cairo_show_text(cr, text);
+
+				restore();
+			}
 			cairo_move_to(cr, x, y);
 			cairo_show_text(cr, text);
 		}
 
 		void strokeText(const char* text, double x, double y)
 		{
+			if (shadowColor.isTransparent() == false)
+			{
+				save();
+
+				setShadowColor();
+
+				cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
+				cairo_text_path(cr, text);
+				cairo_stroke(cr);
+
+				restore();
+			}
 			cairo_move_to(cr, x, y);
 			cairo_text_path(cr, text);
 			cairo_stroke(cr);
@@ -921,12 +1043,206 @@ namespace canvas
 		LineWidthProperty lineWidth;
 		MiterLimitProperty miterLimit;
 		GlobalCompositeOperationProperty globalCompositeOperation;
+		ShadowOffsetProperty shadowOffsetX;
+		ShadowOffsetProperty shadowOffsetY;
+		ShadowColorProperty shadowColor;
 	private:
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;
 		void operator=(const Canvas& other) = delete;
 
+		void setShadowColor()
+		{
+			unsigned int color = shadowColor;
+			double a = ((color & 0xff000000) >> 24) / 255.0;
+			double r = ((color & 0xff0000) >> 16) / 255.0;
+			double g = ((color & 0xff00) >> 8) / 255.0;
+			double b = (color & 0xff) / 255.0;
+			cairo_set_source_rgba(cr, r, g, b, a);
+		}
+
 		cairo_surface_t* surface;
 		cairo_t* cr;
 	};
+
+	const char* getColorValue(const char* color_name)
+	{
+		std::string color_name_str = color_name;
+		for (size_t i = 0; i < color_name_str.size(); ++i)
+		{
+			char ch = color_name_str[i];
+			if(ch>='A' && ch <= 'Z')
+				color_name_str[i] = tolower(ch);
+		}
+		initColorNameMap();
+		auto it = g_ColorNameMap.find(color_name_str);
+		if (it == g_ColorNameMap.end())
+			throw std::runtime_error("color name not found");
+
+		return it->second.c_str();
+	}
+
+	// https://www.w3schools.com/colors/colors_names.asp
+	void initColorNameMap()
+	{
+		if (g_ColorNameMap.size() == 0)
+		{
+			g_ColorNameMap.insert(std::make_pair("aliceblue", "#F0F8FF"));
+			g_ColorNameMap.insert(std::make_pair("antiquewhite", "#FAEBD7"));
+			g_ColorNameMap.insert(std::make_pair("aqua", "#00FFFF"));
+			g_ColorNameMap.insert(std::make_pair("aquamarine", "#7FFFD4"));
+			g_ColorNameMap.insert(std::make_pair("azure", "#F0FFFF"));
+			g_ColorNameMap.insert(std::make_pair("beige", "#F5F5DC"));
+			g_ColorNameMap.insert(std::make_pair("bisque", "#FFE4C4"));
+			g_ColorNameMap.insert(std::make_pair("black", "#000000"));
+			g_ColorNameMap.insert(std::make_pair("blanchedalmond", "#FFEBCD"));
+			g_ColorNameMap.insert(std::make_pair("blue", "#0000FF"));
+
+			g_ColorNameMap.insert(std::make_pair("blueviolet", "#8A2BE2"));
+			g_ColorNameMap.insert(std::make_pair("brown", "#A52A2A"));
+			g_ColorNameMap.insert(std::make_pair("burlywood", "#DEB887"));
+			g_ColorNameMap.insert(std::make_pair("cadetblue", "#5F9EA0"));
+			g_ColorNameMap.insert(std::make_pair("chartreuse", "#7FFF00"));
+			g_ColorNameMap.insert(std::make_pair("chocolate", "#D2691E"));
+			g_ColorNameMap.insert(std::make_pair("coral", "#FF7F50"));
+			g_ColorNameMap.insert(std::make_pair("cornflowerblue", "#6495ED"));
+			g_ColorNameMap.insert(std::make_pair("cornsilk", "#FFF8DC"));
+			g_ColorNameMap.insert(std::make_pair("crimson", "#DC143C"));
+			g_ColorNameMap.insert(std::make_pair("cyan", "#00FFFF"));
+			g_ColorNameMap.insert(std::make_pair("darkblue", "#00008B"));
+
+			g_ColorNameMap.insert(std::make_pair("darkcyan", "#008B8B"));
+			g_ColorNameMap.insert(std::make_pair("darkgoldenrod", "#B8860B"));
+			g_ColorNameMap.insert(std::make_pair("darkgray", "#A9A9A9"));
+			g_ColorNameMap.insert(std::make_pair("darkgrey", "#A9A9A9"));
+			g_ColorNameMap.insert(std::make_pair("darkgreen", "#006400"));
+			g_ColorNameMap.insert(std::make_pair("darkkhaki", "#BDB76B"));
+			g_ColorNameMap.insert(std::make_pair("darkmagenta", "#8B008B"));
+			g_ColorNameMap.insert(std::make_pair("darkolivegreen", "#556B2F"));
+			g_ColorNameMap.insert(std::make_pair("darkorange", "#FF8C00"));
+			g_ColorNameMap.insert(std::make_pair("darkorchid", "#9932CC"));
+			g_ColorNameMap.insert(std::make_pair("darkred", "#8B0000"));
+			g_ColorNameMap.insert(std::make_pair("darksalmon", "#E9967A"));
+			g_ColorNameMap.insert(std::make_pair("darkseagreen", "#8FBC8F"));
+			g_ColorNameMap.insert(std::make_pair("darkslateblue", "#483D8B"));
+			g_ColorNameMap.insert(std::make_pair("darkslategray", "#2F4F4F"));
+			g_ColorNameMap.insert(std::make_pair("darkslategrey", "#2F4F4F"));
+			g_ColorNameMap.insert(std::make_pair("darkturquoise", "#00CED1"));
+			g_ColorNameMap.insert(std::make_pair("darkviolet", "#9400D3"));
+			g_ColorNameMap.insert(std::make_pair("deeppink", "#FF1493"));
+			g_ColorNameMap.insert(std::make_pair("deepskyblue", "#00BFFF"));
+			g_ColorNameMap.insert(std::make_pair("dimgray", "#696969"));
+			g_ColorNameMap.insert(std::make_pair("dimgrey", "#696969"));
+			g_ColorNameMap.insert(std::make_pair("dodgerblue", "#1E90FF"));
+
+			g_ColorNameMap.insert(std::make_pair("firebrick", "#B22222"));
+			g_ColorNameMap.insert(std::make_pair("floralwhite", "#FFFAF0"));
+			g_ColorNameMap.insert(std::make_pair("forestgreen", "#228B22"));
+			g_ColorNameMap.insert(std::make_pair("fuchsia", "#FF00FF"));
+			g_ColorNameMap.insert(std::make_pair("gainsboro", "#DCDCDC"));
+			g_ColorNameMap.insert(std::make_pair("ghostwhite", "#F8F8FF"));
+			g_ColorNameMap.insert(std::make_pair("gold", "#FFD700"));
+			g_ColorNameMap.insert(std::make_pair("goldenrod", "#DAA520"));
+			g_ColorNameMap.insert(std::make_pair("gray", "#808080"));
+			g_ColorNameMap.insert(std::make_pair("grey", "#808080"));
+			g_ColorNameMap.insert(std::make_pair("green", "#008000"));
+			g_ColorNameMap.insert(std::make_pair("greenyellow", "#ADFF2F"));
+			g_ColorNameMap.insert(std::make_pair("honeydew", "#F0FFF0"));
+			g_ColorNameMap.insert(std::make_pair("hotpink", "#FF69B4"));
+			g_ColorNameMap.insert(std::make_pair("indianred", "	#CD5C5C"));
+			g_ColorNameMap.insert(std::make_pair("indigo", "#4B0082"));
+			g_ColorNameMap.insert(std::make_pair("ivory", "#FFFFF0"));
+			g_ColorNameMap.insert(std::make_pair("khaki", "#F0E68C"));
+
+			g_ColorNameMap.insert(std::make_pair("lavender", "#E6E6FA"));
+			g_ColorNameMap.insert(std::make_pair("lavenderblush", "#FFF0F5"));
+			g_ColorNameMap.insert(std::make_pair("lawngreen", "#7CFC00"));
+			g_ColorNameMap.insert(std::make_pair("lemonchiffon", "#FFFACD"));
+			g_ColorNameMap.insert(std::make_pair("lightblue", "#ADD8E6"));
+			g_ColorNameMap.insert(std::make_pair("lightcoral", "#F08080"));
+			g_ColorNameMap.insert(std::make_pair("lightcyan", "#E0FFFF"));
+			g_ColorNameMap.insert(std::make_pair("lightgoldenrodyellow", "#FAFAD2"));
+			g_ColorNameMap.insert(std::make_pair("lightgray", "#D3D3D3"));
+			g_ColorNameMap.insert(std::make_pair("lightgrey", "#D3D3D3"));
+			g_ColorNameMap.insert(std::make_pair("lightgreen", "#90EE90"));
+			g_ColorNameMap.insert(std::make_pair("lightpink", "#FFB6C1"));
+			g_ColorNameMap.insert(std::make_pair("lightsalmon", "#FFA07A"));
+			g_ColorNameMap.insert(std::make_pair("lightseagreen", "#20B2AA"));
+			g_ColorNameMap.insert(std::make_pair("lightskyblue", "#87CEFA"));
+			g_ColorNameMap.insert(std::make_pair("lightslategray", "#778899"));
+			g_ColorNameMap.insert(std::make_pair("lightslategrey", "#778899"));
+			g_ColorNameMap.insert(std::make_pair("lightsteelblue", "#B0C4DE"));
+			g_ColorNameMap.insert(std::make_pair("lightyellow", "#FFFFE0"));
+			g_ColorNameMap.insert(std::make_pair("lime", "#00FF00"));
+			g_ColorNameMap.insert(std::make_pair("limegreen", "#32CD32"));
+			g_ColorNameMap.insert(std::make_pair("linen", "#FAF0E6"));
+
+			g_ColorNameMap.insert(std::make_pair("magenta", "#FF00FF"));
+			g_ColorNameMap.insert(std::make_pair("maroon", "#800000"));
+			g_ColorNameMap.insert(std::make_pair("mediumaquamarine", "#66CDAA"));
+			g_ColorNameMap.insert(std::make_pair("mediumblue", "#0000CD"));
+			g_ColorNameMap.insert(std::make_pair("mediumorchid", "#BA55D3"));
+			g_ColorNameMap.insert(std::make_pair("mediumpurple", "#9370DB"));
+			g_ColorNameMap.insert(std::make_pair("mediumseagreen", "#3CB371"));
+			g_ColorNameMap.insert(std::make_pair("mediumslateblue", "#7B68EE"));
+			g_ColorNameMap.insert(std::make_pair("mediumspringgreen", "#00FA9A"));
+			g_ColorNameMap.insert(std::make_pair("mediumturquoise", "#48D1CC"));
+			g_ColorNameMap.insert(std::make_pair("mediumvioletred", "#C71585"));
+			g_ColorNameMap.insert(std::make_pair("midnightblue", "#191970"));
+			g_ColorNameMap.insert(std::make_pair("mintcream", "#F5FFFA"));
+			g_ColorNameMap.insert(std::make_pair("mistyrose", "#FFE4E1"));
+			g_ColorNameMap.insert(std::make_pair("moccasin", "#FFE4B5"));
+			g_ColorNameMap.insert(std::make_pair("navajowhite", "#FFDEAD"));
+			g_ColorNameMap.insert(std::make_pair("navy", "#000080"));
+			g_ColorNameMap.insert(std::make_pair("oldlace", "#FDF5E6"));
+			g_ColorNameMap.insert(std::make_pair("olive", "#808000"));
+			g_ColorNameMap.insert(std::make_pair("olivedrab", "#6B8E23"));
+			g_ColorNameMap.insert(std::make_pair("orange", "#FFA500"));
+			g_ColorNameMap.insert(std::make_pair("orangered", "#FF4500"));
+			g_ColorNameMap.insert(std::make_pair("orchid", "#DA70D6"));
+
+			g_ColorNameMap.insert(std::make_pair("palegoldenrod", "#EEE8AA"));
+			g_ColorNameMap.insert(std::make_pair("palegreen", "#98FB98"));
+			g_ColorNameMap.insert(std::make_pair("paleturquoise", "#AFEEEE"));
+			g_ColorNameMap.insert(std::make_pair("palevioletred", "#DB7093"));
+			g_ColorNameMap.insert(std::make_pair("papayawhip", "#FFEFD5"));
+			g_ColorNameMap.insert(std::make_pair("peachpuff", "#FFDAB9"));
+			g_ColorNameMap.insert(std::make_pair("peru", "#CD853F"));
+			g_ColorNameMap.insert(std::make_pair("pink", "#FFC0CB"));
+			g_ColorNameMap.insert(std::make_pair("plum", "#DDA0DD"));
+			g_ColorNameMap.insert(std::make_pair("powderblue", "#B0E0E6"));
+			g_ColorNameMap.insert(std::make_pair("purple", "#800080"));
+
+			g_ColorNameMap.insert(std::make_pair("rebeccapurple", "#663399"));
+			g_ColorNameMap.insert(std::make_pair("red", "#FF0000"));
+			g_ColorNameMap.insert(std::make_pair("rosybrown", "#BC8F8F"));
+			g_ColorNameMap.insert(std::make_pair("royalblue", "#4169E1"));
+			g_ColorNameMap.insert(std::make_pair("saddlebrown", "#8B4513"));
+			g_ColorNameMap.insert(std::make_pair("salmon", "#FA8072"));
+			g_ColorNameMap.insert(std::make_pair("sandybrown", "#F4A460"));
+			g_ColorNameMap.insert(std::make_pair("seagreen", "#2E8B57"));
+			g_ColorNameMap.insert(std::make_pair("seashell", "#FFF5EE"));
+			g_ColorNameMap.insert(std::make_pair("sienna", "#A0522D"));
+			g_ColorNameMap.insert(std::make_pair("silver", "#C0C0C0"));
+			g_ColorNameMap.insert(std::make_pair("skyblue", "#87CEEB"));
+			g_ColorNameMap.insert(std::make_pair("slateblue", "#6A5ACD"));
+			g_ColorNameMap.insert(std::make_pair("slategray", "#708090"));
+			g_ColorNameMap.insert(std::make_pair("slategrey", "#708090"));
+			g_ColorNameMap.insert(std::make_pair("snow", "#FFFAFA"));
+			g_ColorNameMap.insert(std::make_pair("springgreen", "#00FF7F"));
+			g_ColorNameMap.insert(std::make_pair("steelblue", "#4682B4"));
+			g_ColorNameMap.insert(std::make_pair("tan", "#D2B48C"));
+			g_ColorNameMap.insert(std::make_pair("teal", "#008080"));
+			g_ColorNameMap.insert(std::make_pair("thistle", "#D8BFD8"));
+			g_ColorNameMap.insert(std::make_pair("tomato", "#FF6347"));
+			g_ColorNameMap.insert(std::make_pair("turquoise", "#40E0D0"));
+			g_ColorNameMap.insert(std::make_pair("violet", "#EE82EE"));
+			g_ColorNameMap.insert(std::make_pair("wheat", "#F5DEB3"));
+			g_ColorNameMap.insert(std::make_pair("white", "#FFFFFF"));
+			g_ColorNameMap.insert(std::make_pair("whitesmoke", "#F5F5F5"));
+			g_ColorNameMap.insert(std::make_pair("yellow", "#FFFF00"));
+			g_ColorNameMap.insert(std::make_pair("yellowgreen", "#9ACD32"));
+		}
+	}
+
 }
