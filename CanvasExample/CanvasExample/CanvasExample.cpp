@@ -236,8 +236,9 @@ void shadowFillRect()
 
 	ctx.shadowOffsetX = 10;
 	ctx.shadowOffsetY = 10;
-	ctx.shadowColor = 0x80000000;
+	//ctx.shadowColor = 0x80000000;
 	//ctx.shadowColor = "#80000000";
+	ctx.shadowColor = "rgba(0,0,0,0.5)";
 	ctx.fillStyle = "red";
 	ctx.fillRect(20, 20, 100, 80);
 
@@ -252,7 +253,8 @@ void shadowFillText()
 
 	ctx.shadowOffsetX = 1;
 	ctx.shadowOffsetY = 2;
-	ctx.shadowColor = 0x60000000;
+	//ctx.shadowColor = 0x60000000;
+	ctx.shadowColor = "rgba(0,0,0,0.5)";
 	ctx.font = "30px Georgia";
 	ctx.fillText("Hello World!", 10, 50);
 
@@ -273,8 +275,8 @@ int main()
 	//repeatPattern();
 	//compositeOp();
 	//pointInPath();
-	shadowFillRect();
-	//shadowFillText();
+	//shadowFillRect();
+	shadowFillText();
 
 	std::cout << "Done!\n";
 }

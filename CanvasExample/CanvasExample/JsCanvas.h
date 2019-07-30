@@ -665,6 +665,42 @@ namespace canvas
 		std::string m_Name;
 	};
 
+	class ShadowBlurProperty
+	{
+	public:
+		ShadowBlurProperty() {}
+
+		void init(const char* name)
+		{
+			m_Name = name;
+		}
+
+		void operator=(unsigned int blur)
+		{
+			EM_ASM_({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				ctx.shadowBlur = $1;
+				}, m_Name.c_str(), blur);
+		}
+		
+		operator unsigned int()
+		{
+			return EM_ASM_INT({
+				var ctx = get_canvas(UTF8ToString($0));
+
+				return ctx.shadowBlur;
+				}, m_Name.c_str());
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		ShadowBlurProperty(const ShadowBlurProperty& other) = delete;
+		void operator=(const ShadowBlurProperty& other) = delete;
+
+		std::string m_Name;
+	};
+
 	class Canvas
 	{
 	public: 
@@ -685,6 +721,7 @@ namespace canvas
 			shadowOffsetX.init(name);
 			shadowOffsetY.init(name);
 			shadowColor.init(name);
+			shadowBlur.init(name);
 		}
 		~Canvas()
 		{
@@ -1025,7 +1062,7 @@ namespace canvas
 		ShadowOffsetXProperty shadowOffsetX;
 		ShadowOffsetYProperty shadowOffsetY;
 		ShadowColorProperty shadowColor;
-
+		ShadowBlurProperty shadowBlur;
 	private:
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;

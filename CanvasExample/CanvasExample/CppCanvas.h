@@ -583,6 +583,60 @@ namespace canvas
 
 		void operator=(const char* color)
 		{
+			std::string str = color;
+			if (str.substr(0, 5) == "rgba(")
+			{
+				int clr_index = 0;
+				bool started = false;
+				std::string temp = "";
+				unsigned char a = 0;
+				unsigned char r = 0;
+				unsigned char g = 0;
+				unsigned char b = 0;
+
+				for (size_t i = 5; i < str.size(); ++i)
+				{
+					char ch = str[i];
+					if (started == false && (ch == ' ' || ch == '\t' || ch == ','))
+					{
+						continue;
+					}
+					else
+						started = true;
+
+					if (started)
+					{
+						if (ch != ' ' && ch != '\t' && ch != ',' && ch != ')')
+							temp += ch;
+						else
+						{
+							double d = strtod(temp.c_str(), nullptr);
+							if (clr_index == 0) // red
+							{
+								r = (unsigned char)(int)(d * 255.0);
+							}
+							else if (clr_index == 1) // green
+							{
+								g = (unsigned char)(int)(d * 255.0);
+							}
+							else if (clr_index == 2) // blue
+							{
+								b = (unsigned char)(int)(d * 255.0);
+							}
+							else if (clr_index == 3) // alpha
+							{
+								a = (unsigned char)(int)(d * 255.0);
+							}
+							started = false;
+							temp = "";
+							++clr_index;
+						}
+					}
+				}
+				m_Color = (unsigned int)((a << 24) | (r << 16) | (g << 8) | b);
+
+				return;
+			}
 			if (color[0] != '#')
 				color = getColorValue(color);
 
@@ -618,6 +672,30 @@ namespace canvas
 
 		unsigned int m_Color;
 	};
+
+	class ShadowBlurProperty
+	{
+	public:
+		ShadowBlurProperty() : m_Blur(0) {}
+
+		void operator=(unsigned int blur)
+		{
+			m_Blur = blur;
+		}
+
+		operator unsigned int()
+		{
+			return m_Blur;
+		}
+
+	private:
+		// remove copy constructor and assignment operator
+		ShadowBlurProperty(const ShadowBlurProperty& other) = delete;
+		void operator=(const ShadowBlurProperty& other) = delete;
+
+		unsigned int m_Blur;
+	};
+
 
 	class Canvas
 	{
@@ -1046,6 +1124,7 @@ namespace canvas
 		ShadowOffsetProperty shadowOffsetX;
 		ShadowOffsetProperty shadowOffsetY;
 		ShadowColorProperty shadowColor;
+		ShadowBlurProperty shadowBlur;
 	private:
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;
