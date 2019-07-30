@@ -366,6 +366,33 @@ namespace canvas
 		cairo_t* cr;
 	};
 
+	void setFont(cairo_t* cr, const char* value)
+	{
+		std::string v = value;
+		size_t font_pos = v.find_first_of(' ');
+		if (font_pos != std::string::npos)
+		{
+			std::string font_str = v.substr(font_pos + 1);
+
+			cairo_select_font_face(cr, font_str.c_str(),
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+		}
+		else
+		{
+			cairo_select_font_face(cr, value,
+				CAIRO_FONT_SLANT_NORMAL,
+				CAIRO_FONT_WEIGHT_NORMAL);
+		}
+
+		size_t font_size_pos = v.find_first_of("px");
+		if (font_size_pos != std::string::npos)
+		{
+			std::string font_size_str = v.substr(0, font_size_pos);
+			unsigned long font_size = strtoul(font_size_str.c_str(), nullptr, 10);
+			cairo_set_font_size(cr, (double)font_size);
+		}
+	}
 	class FontProperty
 	{
 	public:
@@ -378,30 +405,12 @@ namespace canvas
 
 		void operator=(const char* value)
 		{
-			std::string v = value;
-			size_t font_pos = v.find_first_of(' ');
-			if (font_pos != std::string::npos)
-			{
-				std::string font_str = v.substr(font_pos + 1);
-
-				cairo_select_font_face(cr, font_str.c_str(),
-					CAIRO_FONT_SLANT_NORMAL,
-					CAIRO_FONT_WEIGHT_NORMAL);
-			}
-			else
-			{
-				cairo_select_font_face(cr, value,
-					CAIRO_FONT_SLANT_NORMAL,
-					CAIRO_FONT_WEIGHT_NORMAL);
-			}
-
-			size_t font_size_pos = v.find_first_of("px");
-			if (font_size_pos != std::string::npos)
-			{
-				std::string font_size_str = v.substr(0, font_size_pos);
-				unsigned long font_size = strtoul(font_size_str.c_str(), nullptr, 10);
-				cairo_set_font_size(cr, (double)font_size);
-			}
+			m_Font = value;
+			setFont(cr, value);
+		}
+		const char* getFont() const
+		{
+			return m_Font.c_str();
 		}
 	private:
 		// remove copy constructor and assignment operator
@@ -409,6 +418,7 @@ namespace canvas
 		void operator=(const FontProperty& other) = delete;
 
 		cairo_t* cr;
+		std::string m_Font;
 	};
 
 	class LineCapProperty
@@ -714,6 +724,11 @@ namespace canvas
 			lineWidth.init(cr);
 			miterLimit.init(cr);
 			globalCompositeOperation.init(cr);
+
+			fillStyle = "white";
+			fillRect(0, 0, m_Width, m_Height);
+			fillStyle = "black";
+			lineWidth = 1.0;
 		}
 
 		~Canvas()
@@ -733,14 +748,81 @@ namespace canvas
 		{
 			if (shadowColor.isTransparent() == false)
 			{
-				save();
+				int blur_cnt = shadowBlur;
+				if (blur_cnt <= 0)
+				{
+					save();
 
-				setShadowColor(cr);
+					setShadowColor(cr);
 
-				cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
-				cairo_fill(cr);
+					cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
+					cairo_fill(cr);
 
-				restore();
+					restore();
+				}
+				else
+				{
+					save();
+
+					cairo_surface_t* mask_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
+					cairo_t* mask_cr = cairo_create(mask_surface);
+
+					double offset_x = shadowOffsetX;
+					double offset_y = shadowOffsetY;
+
+					cairo_set_source_rgba(mask_cr, 0, 0, 1.0, 1.0);
+
+					cairo_rectangle(mask_cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
+					cairo_fill(mask_cr);
+
+					cairo_surface_flush(surface);
+					cairo_surface_flush(mask_surface);
+					unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+
+					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
+
+					int blur_cnt = shadowBlur;
+					if (blur_cnt > 0)
+					{
+						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+						blur(blur_cnt, src_pixel, orig_dest);
+						delete[] orig_dest;
+						orig_dest = nullptr;
+					}
+
+					unsigned char rs = 0;
+					unsigned char gs = 0;
+					unsigned char bs = 0;
+					unsigned char as = 0;
+					getShadowColor(&rs, &gs, &bs, &as);
+
+					for (int ty = 0; ty < m_Height; ++ty)
+					{
+						for (int tx = 0; tx < m_Width; ++tx)
+						{
+							int index = (ty * m_Width + tx) * 4;
+
+							if (src_pixel[index] > 0)
+							{
+								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
+								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
+								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
+								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
+								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
+								dest_pixel[index + 3] = 0xff;
+							}
+						}
+					}
+
+					cairo_surface_mark_dirty(surface);
+
+					cairo_destroy(mask_cr);
+					cairo_surface_destroy(mask_surface);
+					mask_cr = nullptr;
+					mask_surface = nullptr;
+
+					restore();
+				}
 			}
 			cairo_rectangle(cr, x, y, width, height);
 			cairo_fill(cr);
@@ -770,14 +852,81 @@ namespace canvas
 		{
 			if (shadowColor.isTransparent() == false)
 			{
-				save();
+				int blur_cnt = shadowBlur;
+				if (blur_cnt <= 0)
+				{
+					save();
 
-				setShadowColor(cr);
+					setShadowColor(cr);
 
-				cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
-				cairo_stroke(cr);
+					cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
+					cairo_stroke(cr);
 
-				restore();
+					restore();
+				}
+				else
+				{
+					save();
+
+					cairo_surface_t* mask_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
+					cairo_t* mask_cr = cairo_create(mask_surface);
+
+					double offset_x = shadowOffsetX;
+					double offset_y = shadowOffsetY;
+
+					cairo_set_source_rgba(mask_cr, 0, 0, 1.0, 1.0);
+
+					cairo_rectangle(mask_cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
+					cairo_stroke(mask_cr);
+
+					cairo_surface_flush(surface);
+					cairo_surface_flush(mask_surface);
+					unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+
+					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
+
+					int blur_cnt = shadowBlur;
+					if (blur_cnt > 0)
+					{
+						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+						blur(blur_cnt, src_pixel, orig_dest);
+						delete[] orig_dest;
+						orig_dest = nullptr;
+					}
+
+					unsigned char rs = 0;
+					unsigned char gs = 0;
+					unsigned char bs = 0;
+					unsigned char as = 0;
+					getShadowColor(&rs, &gs, &bs, &as);
+
+					for (int ty = 0; ty < m_Height; ++ty)
+					{
+						for (int tx = 0; tx < m_Width; ++tx)
+						{
+							int index = (ty * m_Width + tx) * 4;
+
+							if (src_pixel[index] > 0)
+							{
+								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
+								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
+								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
+								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
+								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
+								dest_pixel[index + 3] = 0xff;
+							}
+						}
+					}
+
+					cairo_surface_mark_dirty(surface);
+
+					cairo_destroy(mask_cr);
+					cairo_surface_destroy(mask_surface);
+					mask_cr = nullptr;
+					mask_surface = nullptr;
+
+					restore();
+				}
 			}
 			cairo_rectangle(cr, x, y, width, height);
 			cairo_stroke(cr);
@@ -787,14 +936,82 @@ namespace canvas
 		{
 			if (shadowColor.isTransparent() == false)
 			{
-				save();
+				int blur_cnt = shadowBlur;
+				if (blur_cnt <= 0)
+				{
+					save();
 
-				setShadowColor(cr);
+					setShadowColor(cr);
 
-				cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
-				cairo_show_text(cr, text);
+					cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
+					cairo_show_text(cr, text);
 
-				restore();
+					restore();
+				}
+				else
+				{
+					save();
+
+					cairo_surface_t* mask_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
+					cairo_t* mask_cr = cairo_create(mask_surface);
+
+					double offset_x = shadowOffsetX;
+					double offset_y = shadowOffsetY;
+
+					cairo_set_source_rgba(mask_cr, 0, 0, 1.0, 1.0);
+
+					setFont(mask_cr, font.getFont());
+					cairo_move_to(mask_cr, x + shadowOffsetX, y + shadowOffsetY);
+					cairo_show_text(mask_cr, text);
+
+					cairo_surface_flush(surface);
+					cairo_surface_flush(mask_surface);
+					unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+
+					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
+
+					int blur_cnt = shadowBlur;
+					if (blur_cnt > 0)
+					{
+						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+						blur(blur_cnt, src_pixel, orig_dest);
+						delete[] orig_dest;
+						orig_dest = nullptr;
+					}
+
+					unsigned char rs = 0;
+					unsigned char gs = 0;
+					unsigned char bs = 0;
+					unsigned char as = 0;
+					getShadowColor(&rs, &gs, &bs, &as);
+
+					for (int ty = 0; ty < m_Height; ++ty)
+					{
+						for (int tx = 0; tx < m_Width; ++tx)
+						{
+							int index = (ty * m_Width + tx) * 4;
+
+							if (src_pixel[index] > 0)
+							{
+								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
+								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
+								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
+								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
+								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
+								dest_pixel[index + 3] = 0xff;
+							}
+						}
+					}
+
+					cairo_surface_mark_dirty(surface);
+
+					cairo_destroy(mask_cr);
+					cairo_surface_destroy(mask_surface);
+					mask_cr = nullptr;
+					mask_surface = nullptr;
+
+					restore();
+				}
 			}
 			cairo_move_to(cr, x, y);
 			cairo_show_text(cr, text);
@@ -804,15 +1021,84 @@ namespace canvas
 		{
 			if (shadowColor.isTransparent() == false)
 			{
-				save();
+				int blur_cnt = shadowBlur;
+				if (blur_cnt <= 0)
+				{
+					save();
 
-				setShadowColor(cr);
+					setShadowColor(cr);
 
-				cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
-				cairo_text_path(cr, text);
-				cairo_stroke(cr);
+					cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
+					cairo_text_path(cr, text);
+					cairo_stroke(cr);
 
-				restore();
+					restore();
+				}
+				else
+				{
+					save();
+
+					cairo_surface_t* mask_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
+					cairo_t* mask_cr = cairo_create(mask_surface);
+
+					double offset_x = shadowOffsetX;
+					double offset_y = shadowOffsetY;
+
+					cairo_set_source_rgba(mask_cr, 0, 0, 1.0, 1.0);
+
+					setFont(mask_cr, font.getFont());
+					cairo_move_to(mask_cr, x + shadowOffsetX, y + shadowOffsetY);
+					cairo_text_path(mask_cr, text);
+					cairo_stroke(mask_cr);
+
+					cairo_surface_flush(surface);
+					cairo_surface_flush(mask_surface);
+					unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+
+					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
+
+					int blur_cnt = shadowBlur;
+					if (blur_cnt > 0)
+					{
+						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+						blur(blur_cnt, src_pixel, orig_dest);
+						delete[] orig_dest;
+						orig_dest = nullptr;
+					}
+
+					unsigned char rs = 0;
+					unsigned char gs = 0;
+					unsigned char bs = 0;
+					unsigned char as = 0;
+					getShadowColor(&rs, &gs, &bs, &as);
+
+					for (int ty = 0; ty < m_Height; ++ty)
+					{
+						for (int tx = 0; tx < m_Width; ++tx)
+						{
+							int index = (ty * m_Width + tx) * 4;
+
+							if (src_pixel[index] > 0)
+							{
+								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
+								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
+								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
+								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
+								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
+								dest_pixel[index + 3] = 0xff;
+							}
+						}
+					}
+
+					cairo_surface_mark_dirty(surface);
+
+					cairo_destroy(mask_cr);
+					cairo_surface_destroy(mask_surface);
+					mask_cr = nullptr;
+					mask_surface = nullptr;
+
+					restore();
+				}
 			}
 			cairo_move_to(cr, x, y);
 			cairo_text_path(cr, text);
@@ -956,6 +1242,15 @@ namespace canvas
 
 				unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
+				int blur_cnt = shadowBlur;
+				if (blur_cnt > 0)
+				{
+					unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+					blur(blur_cnt, src_pixel, orig_dest);
+					delete[] orig_dest;
+					orig_dest = nullptr;
+				}
+
 				unsigned char rs = 0;
 				unsigned char gs = 0;
 				unsigned char bs = 0;
@@ -1045,6 +1340,15 @@ namespace canvas
 
 				unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 				
+				int blur_cnt = shadowBlur;
+				if (blur_cnt > 0)
+				{
+					unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+					blur(blur_cnt, src_pixel, orig_dest);
+					delete[] orig_dest;
+					orig_dest = nullptr;
+				}
+				
 				unsigned char rs = 0;
 				unsigned char gs = 0; 
 				unsigned char bs = 0;
@@ -1066,7 +1370,6 @@ namespace canvas
 							dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
 							dest_pixel[index + 3] = 0xff;
 						}
-						
 					}
 				}
 
@@ -1280,6 +1583,62 @@ namespace canvas
 		{
 			cairo_status_t status = cairo_surface_write_to_png(surface, file);
 			return (status == CAIRO_STATUS_SUCCESS);
+		}
+		unsigned char clamp(double val, int minimum, int maximum)
+		{
+			if (val > maximum)
+				return maximum;
+			else if (val < minimum)
+				return minimum;
+
+			return val;
+		}
+		void blur(int blur_cnt, unsigned char* orig_src, unsigned char* orig_dest)
+		{
+			double w = 1.0 / 9.0;
+			double filter[9] = { w, w, w, w, w, w, w, w, w };
+			double total = 0;
+			unsigned char* src = orig_src;
+			unsigned char* dest = orig_dest;
+			for (int cnt = 0; cnt < blur_cnt; ++cnt)
+			{
+				for (int y = 1; y < m_Height - 1; ++y)
+				{
+					for (int x = 1; x < m_Width - 1; ++x)
+					{
+						int index = (y * m_Width + x) * 4;
+						total = 0;
+						for (int k = -1; k <= 1; k++) {
+							for (int j = -1; j <= 1; j++) {
+								total += filter[(k + 1) * 3 + (j + 1)] * src[((y - j) * m_Width + (x - k))*4]/255.0;
+							}
+						}
+						dest[index] = clamp(total * 255.0, 0, 255);
+						dest[index + 1] = dest[index + 1];
+						dest[index + 2] = dest[index + 2];
+						dest[index + 3] = dest[index + 3];
+					}
+				}
+				// swap
+				unsigned char* tmp = src;
+				src = dest;
+				dest = tmp;
+			}
+			if ((blur_cnt % 2) == 1) // odd
+			{
+				// copy back to orig_src
+				for (int y = 0; y < m_Height; ++y)
+				{
+					for (int x = 0; x < m_Width; ++x)
+					{
+						int index = (y * m_Width + x) * 4;
+						orig_src[index] = orig_dest[index];
+						orig_src[index+1] = orig_dest[index+1];
+						orig_src[index+2] = orig_dest[index+2];
+						orig_src[index+3] = orig_dest[index+3];
+					}
+				}
+			}
 		}
 
 		FillStyleProperty fillStyle;

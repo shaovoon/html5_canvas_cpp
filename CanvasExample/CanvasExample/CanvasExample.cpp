@@ -250,6 +250,7 @@ void shadowFillText()
 
 	Canvas ctx("canvas", 320, 280);
 
+	ctx.shadowBlur = 10;
 	ctx.shadowOffsetX = 1;
 	ctx.shadowOffsetY = 2;
 	//ctx.shadowColor = 0x60000000;
@@ -329,6 +330,31 @@ void radialGradient()
 	ctx.savePng("c:\\temp\\radialGradient.png");
 }
 
+void shadowFillBlur()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+	/*
+#ifdef __EMSCRIPTEN__
+	ctx.drawImage("yes_image", 10.0, 10.0);
+#else
+	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
+#endif
+	*/
+	ctx.shadowBlur = 10;
+	ctx.shadowOffsetX = 10;
+	ctx.shadowOffsetY = 10;
+	//ctx.shadowColor = 0x80000000;
+	//ctx.shadowColor = "#80000000";
+	ctx.shadowColor = "rgba(0,0,0,0.5)";
+	ctx.fillStyle = "red";
+	ctx.rect(20, 20, 100, 80);
+	ctx.fill();
+
+	ctx.savePng("c:\\temp\\shadowFillBlur.png");
+}
+
 int main()
 {
 	//displayText();
@@ -344,10 +370,11 @@ int main()
 	//compositeOp();
 	//pointInPath();
 	//shadowFillRect();
-	//shadowFillText();
+	shadowFillText();
 	//shadowFillArc();
 	//shadowStrokeArc();
-	radialGradient();
+	//radialGradient();
+	//shadowFillBlur();
 
 	std::cout << "Done!\n";
 }
