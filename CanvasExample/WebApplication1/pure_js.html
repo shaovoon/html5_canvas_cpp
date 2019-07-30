@@ -185,6 +185,38 @@
             ctx.font = "30px Georgia";
             ctx.fillText("Hello World!", 10, 50);
         }
+        function shadowFillArc() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            var img = document.getElementById("yes_image");
+            ctx.drawImage(img, 10, 10);
+
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+            //ctx.shadowColor = 0x60000000;
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+
+            ctx.arc(100, 75, 50, 0, 2 * Math.PI);
+            ctx.fillStyle = "#FF0000";
+            ctx.fill();
+        }
+        function shadowStrokeArc() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            var img = document.getElementById("yes_image");
+            ctx.drawImage(img, 10, 10);
+
+            ctx.shadowOffsetX = 5;
+            ctx.shadowOffsetY = 5;
+            //ctx.shadowColor = 0x60000000;
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+
+            ctx.arc(100, 75, 50, 0, 2 * Math.PI);
+            ctx.strokeStyle = "#FF0000";
+            ctx.stroke();
+        }
 
 
         function canvasApp() {
@@ -204,8 +236,10 @@
             //compositeOp();
             //globalAlpha();
             //pointInPath();
-            shadowFillRect();
+            //shadowFillRect();
             //shadowFillText();
+            shadowFillArc();
+            //shadowStrokeArc();
         }
     </script>
 </head>

@@ -71,8 +71,7 @@ void displayImage()
 #ifdef __EMSCRIPTEN__
 	ctx.drawImage("yes_image", 10.0, 10.0);
 #else
-	//ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
-	ctx.drawImage("D:\\GitHub\\html5_canvas_cpp\\CanvasExample\\WebApplication1\\img_lamp.jpg", 10.0, 10.0);
+	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
 #endif
 
 	ctx.savePng("c:\\temp\\displayImage.png");
@@ -267,6 +266,12 @@ void shadowFillArc()
 
 	Canvas ctx("canvas", 320, 280);
 
+#ifdef __EMSCRIPTEN__
+	ctx.drawImage("yes_image", 10.0, 10.0);
+#else
+	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
+#endif
+
 	ctx.shadowOffsetX = 5;
 	ctx.shadowOffsetY = 5;
 	//ctx.shadowColor = 0x60000000;
@@ -277,7 +282,7 @@ void shadowFillArc()
 	ctx.arc(100, 75, 50, 0, 2 * PI);
 	ctx.fillStyle = "#FF0000";
 	ctx.fill();
-
+	
 	ctx.savePng("c:\\temp\\shadowFillArc.png");
 }
 
@@ -286,6 +291,12 @@ void shadowStrokeArc()
 	using namespace canvas;
 
 	Canvas ctx("canvas", 320, 280);
+
+#ifdef __EMSCRIPTEN__
+	ctx.drawImage("yes_image", 10.0, 10.0);
+#else
+	ctx.drawImage("C:\\Users\\shaov\\Pictures\\yes.jpg", 10.0, 10.0);
+#endif
 
 	ctx.shadowOffsetX = 5;
 	ctx.shadowOffsetY = 5;
