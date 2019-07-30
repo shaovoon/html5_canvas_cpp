@@ -700,7 +700,8 @@ namespace canvas
 	class Canvas
 	{
 	public:
-		Canvas(const char* name, int width, int height) : surface(nullptr), cr(nullptr)
+		Canvas(const char* name, int width, int height) 
+			: surface(nullptr), cr(nullptr), m_Width(width), m_Height(height)
 		{
 			surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
 			cr = cairo_create(surface);
@@ -734,7 +735,7 @@ namespace canvas
 			{
 				save();
 
-				setShadowColor();
+				setShadowColor(cr);
 
 				cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
 				cairo_fill(cr);
@@ -771,7 +772,7 @@ namespace canvas
 			{
 				save();
 
-				setShadowColor();
+				setShadowColor(cr);
 
 				cairo_rectangle(cr, x + shadowOffsetX, y + shadowOffsetY, width, height);
 				cairo_stroke(cr);
@@ -788,7 +789,7 @@ namespace canvas
 			{
 				save();
 
-				setShadowColor();
+				setShadowColor(cr);
 
 				cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
 				cairo_show_text(cr, text);
@@ -805,7 +806,7 @@ namespace canvas
 			{
 				save();
 
-				setShadowColor();
+				setShadowColor(cr);
 
 				cairo_move_to(cr, x + shadowOffsetX, y + shadowOffsetY);
 				cairo_text_path(cr, text);
@@ -908,11 +909,162 @@ namespace canvas
 
 		void stroke()
 		{
+			if (shadowColor.isTransparent() == false)
+			{
+				save();
+
+				cairo_surface_t* tmp_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
+				cairo_t* tmp_cr = cairo_create(tmp_surface);
+
+				double offset_x = shadowOffsetX;
+				double offset_y = shadowOffsetY;
+
+				int i = 0;
+				cairo_path_t* path = nullptr;
+				cairo_path_data_t* data = nullptr;
+				path = cairo_copy_path(cr);
+				for (i = 0; i < path->num_data; i += path->data[i].header.length) {
+					data = &path->data[i];
+					switch (data->header.type) {
+					case CAIRO_PATH_MOVE_TO:
+						cairo_move_to(tmp_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
+						break;
+					case CAIRO_PATH_LINE_TO:
+						cairo_line_to(tmp_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
+						break;
+					case CAIRO_PATH_CURVE_TO:
+						cairo_curve_to(tmp_cr,
+							data[1].point.x + offset_x, data[1].point.y + offset_y,
+							data[2].point.x + offset_x, data[2].point.y + offset_y,
+							data[3].point.x + offset_x, data[3].point.y + offset_y);
+						break;
+					case CAIRO_PATH_CLOSE_PATH:
+						cairo_close_path(tmp_cr);
+						break;
+
+					}
+
+				}
+
+				setShadowColor(tmp_cr);
+
+				cairo_stroke(tmp_cr);
+
+				cairo_surface_write_to_png(tmp_surface, "c:\\temp\\shadow.png");
+
+				cairo_surface_flush(surface);
+				cairo_surface_flush(tmp_surface);
+				unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+
+				unsigned char* src_pixel = cairo_image_surface_get_data(tmp_surface);
+				for (int ty = 0; ty < m_Height; ++ty)
+				{
+					for (int tx = 0; tx < m_Width; ++tx)
+					{
+						int index = (ty * m_Width + tx) * 4;
+						dest_pixel[index] = src_pixel[index];
+						dest_pixel[index + 1] = src_pixel[index + 1];
+						dest_pixel[index + 2] = src_pixel[index + 2];
+						dest_pixel[index + 3] = src_pixel[index + 3];
+					}
+				}
+
+				cairo_surface_mark_dirty(surface);
+
+				cairo_destroy(tmp_cr);
+				cairo_surface_destroy(tmp_surface);
+				tmp_cr = nullptr;
+				tmp_surface = nullptr;
+
+				cairo_path_destroy(path);
+
+				restore();
+			}
+
 			cairo_stroke(cr);
 		}
 
 		void fill()
 		{
+			if (shadowColor.isTransparent() == false)
+			{
+				save();
+
+				cairo_surface_t* tmp_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
+				cairo_t* tmp_cr = cairo_create(tmp_surface);
+
+				double offset_x = shadowOffsetX;
+				double offset_y = shadowOffsetY;
+
+				int i=0;
+				cairo_path_t* path = nullptr;
+				cairo_path_data_t* data = nullptr;
+				path = cairo_copy_path(cr);
+				for (i = 0; i < path->num_data; i += path->data[i].header.length) {
+					data = &path->data[i];
+					switch (data->header.type) {
+					case CAIRO_PATH_MOVE_TO:
+						cairo_move_to(tmp_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
+						break;
+					case CAIRO_PATH_LINE_TO:
+						cairo_line_to(tmp_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
+						break;
+					case CAIRO_PATH_CURVE_TO:
+						cairo_curve_to(tmp_cr, 
+							data[1].point.x + offset_x, data[1].point.y + offset_y,
+							data[2].point.x + offset_x, data[2].point.y + offset_y,
+							data[3].point.x + offset_x, data[3].point.y + offset_y);
+						break;
+					case CAIRO_PATH_CLOSE_PATH:
+						cairo_close_path(tmp_cr);
+						break;
+						
+					}
+					
+				}
+
+				setShadowColor(tmp_cr);
+
+				cairo_fill(tmp_cr);
+
+				cairo_surface_write_to_png(tmp_surface, "c:\\temp\\shadow.png");
+
+				cairo_surface_flush(surface);
+				cairo_surface_flush(tmp_surface);
+				unsigned char* dest_pixel = cairo_image_surface_get_data(surface);
+
+				unsigned char* src_pixel = cairo_image_surface_get_data(tmp_surface);
+				for (int ty = 0; ty < m_Height; ++ty)
+				{
+					for (int tx = 0; tx < m_Width; ++tx)
+					{
+						int index = (ty * m_Width + tx) * 4;
+						dest_pixel[index] = src_pixel[index];
+						dest_pixel[index + 1] = src_pixel[index + 1];
+						dest_pixel[index + 2] = src_pixel[index + 2];
+						dest_pixel[index + 3] = src_pixel[index + 3];
+
+						dest_pixel[index] = 0xff;
+						dest_pixel[index + 1] = src_pixel[index + 1];
+						dest_pixel[index + 2] = src_pixel[index + 2];
+						dest_pixel[index + 3] = src_pixel[index + 3];
+
+						//alphaBlend(unsigned char src, unsigned char dest, unsigned char alpha);
+					}
+				}
+
+				cairo_surface_mark_dirty(surface);
+
+				cairo_destroy(tmp_cr);
+				cairo_surface_destroy(tmp_surface);
+				tmp_cr = nullptr;
+				tmp_surface = nullptr;
+
+				cairo_path_destroy(path);
+
+				restore();
+			}
+
 			cairo_fill(cr);
 		}
 
@@ -1130,18 +1282,27 @@ namespace canvas
 		Canvas(const Canvas& other) = delete;
 		void operator=(const Canvas& other) = delete;
 
-		void setShadowColor()
+		void setShadowColor(cairo_t * cr_obj)
 		{
 			unsigned int color = shadowColor;
 			double a = ((color & 0xff000000) >> 24) / 255.0;
 			double r = ((color & 0xff0000) >> 16) / 255.0;
 			double g = ((color & 0xff00) >> 8) / 255.0;
 			double b = (color & 0xff) / 255.0;
-			cairo_set_source_rgba(cr, r, g, b, a);
+			cairo_set_source_rgba(cr_obj, r, g, b, a);
+		}
+
+		inline unsigned char alphaBlend(unsigned char src, unsigned char dest, unsigned char alpha)
+		{
+			unsigned char invAlpha = ~alpha;
+
+			return (unsigned char)((src * alpha + dest * invAlpha) >> 8);
 		}
 
 		cairo_surface_t* surface;
 		cairo_t* cr;
+		int m_Width; 
+		int m_Height;
 	};
 
 	const char* getColorValue(const char* color_name)

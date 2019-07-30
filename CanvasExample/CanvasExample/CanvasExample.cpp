@@ -261,6 +261,46 @@ void shadowFillText()
 	ctx.savePng("c:\\temp\\shadowFillText.png");
 }
 
+void shadowFillArc()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.shadowOffsetX = 5;
+	ctx.shadowOffsetY = 5;
+	//ctx.shadowColor = 0x60000000;
+	ctx.shadowColor = "rgba(0,0,0,0.5)";
+
+	double PI = 3.14159265359;
+
+	ctx.arc(100, 75, 50, 0, 2 * PI);
+	ctx.fillStyle = "#FF0000";
+	ctx.fill();
+
+	ctx.savePng("c:\\temp\\shadowFillArc.png");
+}
+
+void shadowStrokeArc()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.shadowOffsetX = 5;
+	ctx.shadowOffsetY = 5;
+	//ctx.shadowColor = 0x60000000;
+	ctx.shadowColor = "rgba(0,0,0,0.5)";
+
+	double PI = 3.14159265359;
+
+	ctx.arc(100, 75, 50, 0, 2 * PI);
+	ctx.strokeStyle = "#FF0000";
+	ctx.stroke();
+
+	ctx.savePng("c:\\temp\\shadowStrokeArc.png");
+}
+
 int main()
 {
 	//displayText();
@@ -276,7 +316,9 @@ int main()
 	//compositeOp();
 	//pointInPath();
 	//shadowFillRect();
-	shadowFillText();
+	//shadowFillText();
+	shadowFillArc();
+	//shadowStrokeArc();
 
 	std::cout << "Done!\n";
 }
