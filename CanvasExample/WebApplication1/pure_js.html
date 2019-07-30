@@ -217,7 +217,18 @@
             ctx.strokeStyle = "#FF0000";
             ctx.stroke();
         }
+        function radialGradient() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
 
+            var grd = ctx.createRadialGradient(75, 50, 5, 90, 60, 100);
+            grd.addColorStop(0, "red");
+            grd.addColorStop(1, "white");
+
+            // Fill with gradient
+            ctx.fillStyle = grd;
+            ctx.fillRect(10, 10, 150, 100);
+        }
 
         function canvasApp() {
             if (!Modernizr.canvas) {
@@ -238,8 +249,9 @@
             //pointInPath();
             //shadowFillRect();
             //shadowFillText();
-            shadowFillArc();
+            //shadowFillArc();
             //shadowStrokeArc();
+            radialGradient();
         }
     </script>
 </head>

@@ -312,6 +312,23 @@ void shadowStrokeArc()
 	ctx.savePng("c:\\temp\\shadowStrokeArc.png");
 }
 
+void radialGradient()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	auto grd = ctx.createRadialGradient("grd", 75, 50, 5, 90, 60, 100);
+	grd.addColorStop(0, "red");
+	grd.addColorStop(1, "white");
+
+	// Fill with gradient
+	ctx.fillStyle = grd;
+	ctx.fillRect(10, 10, 150, 100);
+
+	ctx.savePng("c:\\temp\\radialGradient.png");
+}
+
 int main()
 {
 	//displayText();
@@ -328,8 +345,9 @@ int main()
 	//pointInPath();
 	//shadowFillRect();
 	//shadowFillText();
-	shadowFillArc();
+	//shadowFillArc();
 	//shadowStrokeArc();
+	radialGradient();
 
 	std::cout << "Done!\n";
 }
