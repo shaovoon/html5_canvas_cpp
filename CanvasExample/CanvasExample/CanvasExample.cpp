@@ -370,11 +370,11 @@ int main()
 	//compositeOp();
 	//pointInPath();
 	//shadowFillRect();
-	shadowFillText();
+	//shadowFillText();
 	//shadowFillArc();
 	//shadowStrokeArc();
 	//radialGradient();
-	//shadowFillBlur();
+	shadowFillBlur();
 
 	std::cout << "Done!\n";
 }

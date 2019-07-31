@@ -781,38 +781,9 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					int blur_cnt = shadowBlur;
-					if (blur_cnt > 0)
-					{
-						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
-						blur(blur_cnt, src_pixel, orig_dest);
-						delete[] orig_dest;
-						orig_dest = nullptr;
-					}
+					applySimpleBlur(shadowBlur, src_pixel);
 
-					unsigned char rs = 0;
-					unsigned char gs = 0;
-					unsigned char bs = 0;
-					unsigned char as = 0;
-					getShadowColor(&rs, &gs, &bs, &as);
-
-					for (int ty = 0; ty < m_Height; ++ty)
-					{
-						for (int tx = 0; tx < m_Width; ++tx)
-						{
-							int index = (ty * m_Width + tx) * 4;
-
-							if (src_pixel[index] > 0)
-							{
-								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
-								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
-								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
-								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
-								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
-								dest_pixel[index + 3] = 0xff;
-							}
-						}
-					}
+					applyShadow(src_pixel, dest_pixel);
 
 					cairo_surface_mark_dirty(surface);
 
@@ -885,38 +856,9 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					int blur_cnt = shadowBlur;
-					if (blur_cnt > 0)
-					{
-						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
-						blur(blur_cnt, src_pixel, orig_dest);
-						delete[] orig_dest;
-						orig_dest = nullptr;
-					}
+					applySimpleBlur(shadowBlur, src_pixel);
 
-					unsigned char rs = 0;
-					unsigned char gs = 0;
-					unsigned char bs = 0;
-					unsigned char as = 0;
-					getShadowColor(&rs, &gs, &bs, &as);
-
-					for (int ty = 0; ty < m_Height; ++ty)
-					{
-						for (int tx = 0; tx < m_Width; ++tx)
-						{
-							int index = (ty * m_Width + tx) * 4;
-
-							if (src_pixel[index] > 0)
-							{
-								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
-								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
-								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
-								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
-								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
-								dest_pixel[index + 3] = 0xff;
-							}
-						}
-					}
+					applyShadow(src_pixel, dest_pixel);
 
 					cairo_surface_mark_dirty(surface);
 
@@ -970,38 +912,9 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					int blur_cnt = shadowBlur;
-					if (blur_cnt > 0)
-					{
-						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
-						blur(blur_cnt, src_pixel, orig_dest);
-						delete[] orig_dest;
-						orig_dest = nullptr;
-					}
+					applySimpleBlur(shadowBlur, src_pixel);
 
-					unsigned char rs = 0;
-					unsigned char gs = 0;
-					unsigned char bs = 0;
-					unsigned char as = 0;
-					getShadowColor(&rs, &gs, &bs, &as);
-
-					for (int ty = 0; ty < m_Height; ++ty)
-					{
-						for (int tx = 0; tx < m_Width; ++tx)
-						{
-							int index = (ty * m_Width + tx) * 4;
-
-							if (src_pixel[index] > 0)
-							{
-								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
-								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
-								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
-								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
-								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
-								dest_pixel[index + 3] = 0xff;
-							}
-						}
-					}
+					applyShadow(src_pixel, dest_pixel);
 
 					cairo_surface_mark_dirty(surface);
 
@@ -1057,38 +970,9 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					int blur_cnt = shadowBlur;
-					if (blur_cnt > 0)
-					{
-						unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
-						blur(blur_cnt, src_pixel, orig_dest);
-						delete[] orig_dest;
-						orig_dest = nullptr;
-					}
+					applySimpleBlur(shadowBlur, src_pixel);
 
-					unsigned char rs = 0;
-					unsigned char gs = 0;
-					unsigned char bs = 0;
-					unsigned char as = 0;
-					getShadowColor(&rs, &gs, &bs, &as);
-
-					for (int ty = 0; ty < m_Height; ++ty)
-					{
-						for (int tx = 0; tx < m_Width; ++tx)
-						{
-							int index = (ty * m_Width + tx) * 4;
-
-							if (src_pixel[index] > 0)
-							{
-								double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
-								unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
-								dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
-								dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
-								dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
-								dest_pixel[index + 3] = 0xff;
-							}
-						}
-					}
+					applyShadow(src_pixel, dest_pixel);
 
 					cairo_surface_mark_dirty(surface);
 
@@ -1202,35 +1086,7 @@ namespace canvas
 				cairo_surface_t* mask_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
 				cairo_t* mask_cr = cairo_create(mask_surface);
 
-				double offset_x = shadowOffsetX;
-				double offset_y = shadowOffsetY;
-
-				int i = 0;
-				cairo_path_t* path = nullptr;
-				cairo_path_data_t* data = nullptr;
-				path = cairo_copy_path(cr);
-				for (i = 0; i < path->num_data; i += path->data[i].header.length) {
-					data = &path->data[i];
-					switch (data->header.type) {
-					case CAIRO_PATH_MOVE_TO:
-						cairo_move_to(mask_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
-						break;
-					case CAIRO_PATH_LINE_TO:
-						cairo_line_to(mask_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
-						break;
-					case CAIRO_PATH_CURVE_TO:
-						cairo_curve_to(mask_cr,
-							data[1].point.x + offset_x, data[1].point.y + offset_y,
-							data[2].point.x + offset_x, data[2].point.y + offset_y,
-							data[3].point.x + offset_x, data[3].point.y + offset_y);
-						break;
-					case CAIRO_PATH_CLOSE_PATH:
-						cairo_close_path(mask_cr);
-						break;
-
-					}
-
-				}
+				cairo_path_t* path = copyPath(cr, mask_cr);
 
 				cairo_set_source_rgba(mask_cr, 0, 0, 1.0, 1.0);
 
@@ -1242,39 +1098,9 @@ namespace canvas
 
 				unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-				int blur_cnt = shadowBlur;
-				if (blur_cnt > 0)
-				{
-					unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
-					blur(blur_cnt, src_pixel, orig_dest);
-					delete[] orig_dest;
-					orig_dest = nullptr;
-				}
+				applySimpleBlur(shadowBlur, src_pixel);
 
-				unsigned char rs = 0;
-				unsigned char gs = 0;
-				unsigned char bs = 0;
-				unsigned char as = 0;
-				getShadowColor(&rs, &gs, &bs, &as);
-
-				for (int ty = 0; ty < m_Height; ++ty)
-				{
-					for (int tx = 0; tx < m_Width; ++tx)
-					{
-						int index = (ty * m_Width + tx) * 4;
-
-						if (src_pixel[index] > 0)
-						{
-							double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
-							unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
-							dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
-							dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
-							dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
-							dest_pixel[index + 3] = 0xff;
-						}
-
-					}
-				}
+				applyShadow(src_pixel, dest_pixel);
 
 				cairo_surface_mark_dirty(surface);
 
@@ -1300,35 +1126,7 @@ namespace canvas
 				cairo_surface_t* mask_surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, m_Width, m_Height);
 				cairo_t* mask_cr = cairo_create(mask_surface);
 
-				double offset_x = shadowOffsetX;
-				double offset_y = shadowOffsetY;
-
-				int i=0;
-				cairo_path_t* path = nullptr;
-				cairo_path_data_t* data = nullptr;
-				path = cairo_copy_path(cr);
-				for (i = 0; i < path->num_data; i += path->data[i].header.length) {
-					data = &path->data[i];
-					switch (data->header.type) {
-					case CAIRO_PATH_MOVE_TO:
-						cairo_move_to(mask_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
-						break;
-					case CAIRO_PATH_LINE_TO:
-						cairo_line_to(mask_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
-						break;
-					case CAIRO_PATH_CURVE_TO:
-						cairo_curve_to(mask_cr, 
-							data[1].point.x + offset_x, data[1].point.y + offset_y,
-							data[2].point.x + offset_x, data[2].point.y + offset_y,
-							data[3].point.x + offset_x, data[3].point.y + offset_y);
-						break;
-					case CAIRO_PATH_CLOSE_PATH:
-						cairo_close_path(mask_cr);
-						break;
-						
-					}
-					
-				}
+				cairo_path_t* path = copyPath(cr, mask_cr);
 
 				cairo_set_source_rgba(mask_cr, 0, 0, 1.0, 1.0);
 
@@ -1340,38 +1138,9 @@ namespace canvas
 
 				unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 				
-				int blur_cnt = shadowBlur;
-				if (blur_cnt > 0)
-				{
-					unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
-					blur(blur_cnt, src_pixel, orig_dest);
-					delete[] orig_dest;
-					orig_dest = nullptr;
-				}
-				
-				unsigned char rs = 0;
-				unsigned char gs = 0; 
-				unsigned char bs = 0;
-				unsigned char as = 0;
-				getShadowColor(&rs, &gs, &bs, &as);
-				
-				for (int ty = 0; ty < m_Height; ++ty)
-				{
-					for (int tx = 0; tx < m_Width; ++tx)
-					{
-						int index = (ty * m_Width + tx) * 4;
-						
-						if (src_pixel[index] > 0)
-						{
-							double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
-							unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
-							dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
-							dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
-							dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
-							dest_pixel[index + 3] = 0xff;
-						}
-					}
-				}
+				applySimpleBlur(shadowBlur, src_pixel);
+
+				applyShadow(src_pixel, dest_pixel);
 
 				cairo_surface_mark_dirty(surface);
 
@@ -1593,8 +1362,13 @@ namespace canvas
 
 			return val;
 		}
-		void blur(int blur_cnt, unsigned char* orig_src, unsigned char* orig_dest)
+		void applySimpleBlur(int blur_cnt, unsigned char* orig_src)
 		{
+			if (blur_cnt <= 0)
+				return;
+
+			unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+
 			double w = 1.0 / 9.0;
 			double filter[9] = { w, w, w, w, w, w, w, w, w };
 			double total = 0;
@@ -1639,6 +1413,8 @@ namespace canvas
 					}
 				}
 			}
+			delete[] orig_dest;
+			orig_dest = nullptr;
 		}
 
 		FillStyleProperty fillStyle;
@@ -1657,6 +1433,67 @@ namespace canvas
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;
 		void operator=(const Canvas& other) = delete;
+
+		cairo_path_t* copyPath(cairo_t* src_cr, cairo_t* dest_cr)
+		{
+			double offset_x = shadowOffsetX;
+			double offset_y = shadowOffsetY;
+
+			cairo_path_t* path = nullptr;
+			cairo_path_data_t* data = nullptr;
+			path = cairo_copy_path(src_cr);
+			for (int i = 0; i < path->num_data; i += path->data[i].header.length) 
+			{
+				data = &path->data[i];
+				switch (data->header.type) 
+				{
+				case CAIRO_PATH_MOVE_TO:
+					cairo_move_to(dest_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
+					break;
+				case CAIRO_PATH_LINE_TO:
+					cairo_line_to(dest_cr, data[1].point.x + offset_x, data[1].point.y + offset_y);
+					break;
+				case CAIRO_PATH_CURVE_TO:
+					cairo_curve_to(dest_cr,
+						data[1].point.x + offset_x, data[1].point.y + offset_y,
+						data[2].point.x + offset_x, data[2].point.y + offset_y,
+						data[3].point.x + offset_x, data[3].point.y + offset_y);
+					break;
+				case CAIRO_PATH_CLOSE_PATH:
+					cairo_close_path(dest_cr);
+					break;
+
+				}
+			}
+			return path;
+		}
+
+		void applyShadow(unsigned char* src_pixel, unsigned char* dest_pixel)
+		{
+			unsigned char rs = 0;
+			unsigned char gs = 0;
+			unsigned char bs = 0;
+			unsigned char as = 0;
+			getShadowColor(&rs, &gs, &bs, &as);
+
+			for (int ty = 0; ty < m_Height; ++ty)
+			{
+				for (int tx = 0; tx < m_Width; ++tx)
+				{
+					int index = (ty * m_Width + tx) * 4;
+
+					if (src_pixel[index] > 0)
+					{
+						double mix_alpha = (as / 255.0) * (src_pixel[index] / 255.0);
+						unsigned char mix_alpha_int = (unsigned char)(mix_alpha * 255.0);
+						dest_pixel[index] = alphaBlend(rs, dest_pixel[index], mix_alpha_int);
+						dest_pixel[index + 1] = alphaBlend(bs, dest_pixel[index + 1], mix_alpha_int);
+						dest_pixel[index + 2] = alphaBlend(gs, dest_pixel[index + 2], mix_alpha_int);
+						dest_pixel[index + 3] = 0xff;
+					}
+				}
+			}
+		}
 
 		void setShadowColor(cairo_t * cr_obj)
 		{
