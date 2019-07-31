@@ -1138,7 +1138,8 @@ namespace canvas
 
 				unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 				
-				applySimpleBlur(shadowBlur, src_pixel);
+				//applySimpleBlur(shadowBlur, src_pixel);
+				applyGaussianBlur(shadowBlur, src_pixel);
 
 				applyShadow(src_pixel, dest_pixel);
 
@@ -1353,6 +1354,24 @@ namespace canvas
 			cairo_status_t status = cairo_surface_write_to_png(surface, file);
 			return (status == CAIRO_STATUS_SUCCESS);
 		}
+
+		FillStyleProperty fillStyle;
+		StrokeStyleProperty strokeStyle;
+		FontProperty font;
+		LineCapProperty lineCap;
+		LineJoinProperty lineJoin;
+		LineWidthProperty lineWidth;
+		MiterLimitProperty miterLimit;
+		GlobalCompositeOperationProperty globalCompositeOperation;
+		ShadowOffsetProperty shadowOffsetX;
+		ShadowOffsetProperty shadowOffsetY;
+		ShadowColorProperty shadowColor;
+		ShadowBlurProperty shadowBlur;
+	private:
+		// remove copy constructor and assignment operator
+		Canvas(const Canvas& other) = delete;
+		void operator=(const Canvas& other) = delete;
+
 		unsigned char clamp(double val, int minimum, int maximum)
 		{
 			if (val > maximum)
@@ -1367,26 +1386,36 @@ namespace canvas
 			if (blur_cnt <= 0)
 				return;
 
-			unsigned char* orig_dest = new unsigned char[m_Width * m_Height * 4];
+			const int total_size = m_Width * m_Height * 4;
+
+			unsigned char* orig_dest = new unsigned char[total_size];
 
 			double w = 1.0 / 9.0;
-			double filter[9] = { w, w, w, w, w, w, w, w, w };
+			static double filter[9] = { w, w, w, w, w, w, w, w, w };
 			double total = 0;
 			unsigned char* src = orig_src;
 			unsigned char* dest = orig_dest;
 			for (int cnt = 0; cnt < blur_cnt; ++cnt)
 			{
-				for (int y = 1; y < m_Height - 1; ++y)
+				for (int y = 0; y < m_Height; ++y)
 				{
-					for (int x = 1; x < m_Width - 1; ++x)
+					for (int x = 0; x < m_Width; ++x)
 					{
-						int index = (y * m_Width + x) * 4;
 						total = 0;
-						for (int k = -1; k <= 1; k++) {
-							for (int j = -1; j <= 1; j++) {
-								total += filter[(k + 1) * 3 + (j + 1)] * src[((y - j) * m_Width + (x - k))*4]/255.0;
+						for (int k = -1; k <= 1; ++k) {
+							for (int j = -1; j <= 1; ++j) 
+							{
+								int filter_index = (k + 1) * 3 + (j + 1);
+								if (filter_index < 0 || filter_index >= 9)
+									continue;
+								int src_index = ((y + j) * m_Width + (x + k)) * 4;
+								if (src_index < 0 || src_index >= total_size)
+									continue;
+
+								total += filter[filter_index] * (src[src_index] / 255.0);
 							}
 						}
+						int index = (y * m_Width + x) * 4;
 						dest[index] = clamp(total * 255.0, 0, 255);
 						dest[index + 1] = dest[index + 1];
 						dest[index + 2] = dest[index + 2];
@@ -1407,9 +1436,9 @@ namespace canvas
 					{
 						int index = (y * m_Width + x) * 4;
 						orig_src[index] = orig_dest[index];
-						orig_src[index+1] = orig_dest[index+1];
-						orig_src[index+2] = orig_dest[index+2];
-						orig_src[index+3] = orig_dest[index+3];
+						orig_src[index + 1] = orig_dest[index + 1];
+						orig_src[index + 2] = orig_dest[index + 2];
+						orig_src[index + 3] = orig_dest[index + 3];
 					}
 				}
 			}
@@ -1417,22 +1446,79 @@ namespace canvas
 			orig_dest = nullptr;
 		}
 
-		FillStyleProperty fillStyle;
-		StrokeStyleProperty strokeStyle;
-		FontProperty font;
-		LineCapProperty lineCap;
-		LineJoinProperty lineJoin;
-		LineWidthProperty lineWidth;
-		MiterLimitProperty miterLimit;
-		GlobalCompositeOperationProperty globalCompositeOperation;
-		ShadowOffsetProperty shadowOffsetX;
-		ShadowOffsetProperty shadowOffsetY;
-		ShadowColorProperty shadowColor;
-		ShadowBlurProperty shadowBlur;
-	private:
-		// remove copy constructor and assignment operator
-		Canvas(const Canvas& other) = delete;
-		void operator=(const Canvas& other) = delete;
+		void applyGaussianBlur(int blur_cnt, unsigned char* orig_src)
+		{
+			if (blur_cnt <= 0)
+				return;
+
+			const int total_size = m_Width * m_Height * 4;
+
+			unsigned char* orig_dest = new unsigned char[total_size];
+
+			const int dim = 7;
+			static double filter[] = 
+			{ 
+				0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067,
+				0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
+				0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
+				0.00038771,	0.01330373,	0.11098164,	0.22508352,	0.11098164,	0.01330373,	0.00038771,
+				0.00019117,	0.00655965,	0.05472157,	0.11098164,	0.05472157,	0.00655965,	0.00019117,
+				0.00002292,	0.00078633,	0.00655965,	0.01330373,	0.00655965,	0.00078633,	0.00002292,
+				0.00000067,	0.00002292,	0.00019117,	0.00038771,	0.00019117,	0.00002292,	0.00000067 
+			};
+			double total = 0;
+			unsigned char* src = orig_src;
+			unsigned char* dest = orig_dest;
+			for (int cnt = 0; cnt < blur_cnt; ++cnt)
+			{
+				for (int y = 0; y < m_Height; ++y)
+				{
+					for (int x = 0; x < m_Width; ++x)
+					{
+						total = 0;
+						for (int k = -3; k <= 3; ++k) {
+							for (int j = -3; j <= 3; ++j) {
+								int filter_index = (k + 3) * 7 + (j + 3);
+								if (filter_index < 0 || filter_index >= 49)
+									continue;
+								int src_index = ((y + j) * m_Width + (x + k)) * 4;
+								if (src_index < 0 || src_index >= total_size)
+									continue;
+								total += filter[filter_index] * (src[src_index] / 255.0);
+							}
+						}
+						int index = (y * m_Width + x) * 4;
+						dest[index] = clamp(total * 255.0, 0, 255);
+						dest[index + 1] = dest[index + 1];
+						dest[index + 2] = dest[index + 2];
+						dest[index + 3] = dest[index + 3];
+					}
+				}
+				// swap
+				unsigned char* tmp = src;
+				src = dest;
+				dest = tmp;
+			}
+			if ((blur_cnt % 2) == 1) // odd
+			{
+				// copy back to orig_src
+				for (int y = 0; y < m_Height; ++y)
+				{
+					for (int x = 0; x < m_Width; ++x)
+					{
+						int index = (y * m_Width + x) * 4;
+						orig_src[index] = orig_dest[index];
+						orig_src[index + 1] = orig_dest[index + 1];
+						orig_src[index + 2] = orig_dest[index + 2];
+						orig_src[index + 3] = orig_dest[index + 3];
+					}
+				}
+			}
+			delete[] orig_dest;
+			orig_dest = nullptr;
+		}
+
+
 
 		cairo_path_t* copyPath(cairo_t* src_cr, cairo_t* dest_cr)
 		{

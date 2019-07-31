@@ -343,8 +343,8 @@ void shadowFillBlur()
 #endif
 	*/
 	ctx.shadowBlur = 10;
-	ctx.shadowOffsetX = 10;
-	ctx.shadowOffsetY = 10;
+	//ctx.shadowOffsetX = 10;
+	//ctx.shadowOffsetY = 10;
 	//ctx.shadowColor = 0x80000000;
 	//ctx.shadowColor = "#80000000";
 	ctx.shadowColor = "rgba(0,0,0,0.5)";

@@ -230,6 +230,21 @@
             ctx.fillRect(10, 10, 150, 100);
         }
 
+        function shadowFillBlur() {
+            var theCanvas = document.getElementById("canvas");
+            var ctx = theCanvas.getContext("2d");
+
+            ctx.shadowBlur = 10;
+            ctx.shadowOffsetX = 10;
+            ctx.shadowOffsetY = 10;
+            //ctx.shadowColor = 0x80000000;
+            //ctx.shadowColor = "#80000000";
+            ctx.shadowColor = "rgba(0,0,0,0.5)";
+            ctx.fillStyle = "red";
+            ctx.rect(20, 20, 100, 80);
+            ctx.fill();
+        }
+
         function canvasApp() {
             if (!Modernizr.canvas) {
                 return;
@@ -251,7 +266,8 @@
             //shadowFillText();
             //shadowFillArc();
             //shadowStrokeArc();
-            radialGradient();
+            //radialGradient();
+            shadowFillBlur();
         }
     </script>
 </head>
