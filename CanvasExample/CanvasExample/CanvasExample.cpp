@@ -35,6 +35,29 @@ void displayText()
 	ctx.savePng("c:\\temp\\displayText.png");
 }
 
+void displayItalicText()
+{
+	using namespace canvas;
+
+	Canvas ctx("canvas", 320, 280);
+
+	ctx.font = "Italic 20px Georgia";
+	ctx.fillText("Hello World!", 10, 50);
+
+	ctx.font = "Bold 30px Verdana";
+
+	// Create gradient
+	auto gradient = ctx.createLinearGradient("gradient", 0, 0, 320, 0);
+	gradient.addColorStop(0.0, "magenta");
+	gradient.addColorStop(0.5, "blue");
+	gradient.addColorStop(1.0, "red");
+	// Fill with gradient
+	ctx.fillStyle = gradient;
+	ctx.fillText("Big smile!", 10, 90);
+
+	ctx.savePng("c:\\temp\\displayItalicText.png");
+}
+
 // Display text outline with strokeText()
 void displayTextOutline()
 {
@@ -343,11 +366,9 @@ void shadowFillBlur()
 #endif
 	*/
 	ctx.shadowBlur = 10;
-	//ctx.shadowOffsetX = 10;
-	//ctx.shadowOffsetY = 10;
-	//ctx.shadowColor = 0x80000000;
-	//ctx.shadowColor = "#80000000";
-	ctx.shadowColor = "rgba(0,0,0,0.5)";
+	ctx.shadowOffsetX = 10;
+	ctx.shadowOffsetY = 10;
+	ctx.shadowColor = "rgba(0,0,0,1.0)";
 	ctx.fillStyle = "red";
 	ctx.rect(20, 20, 100, 80);
 	ctx.fill();
@@ -358,6 +379,7 @@ void shadowFillBlur()
 int main()
 {
 	//displayText();
+	displayItalicText();
 	//displayTextOutline();
 	//displayImage();
 	//drawLine();
@@ -374,7 +396,7 @@ int main()
 	//shadowFillArc();
 	//shadowStrokeArc();
 	//radialGradient();
-	shadowFillBlur();
+	//shadowFillBlur();
 
 	std::cout << "Done!\n";
 }

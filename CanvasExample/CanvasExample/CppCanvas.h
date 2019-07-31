@@ -369,29 +369,49 @@ namespace canvas
 	void setFont(cairo_t* cr, const char* value)
 	{
 		std::string v = value;
-		size_t font_pos = v.find_first_of(' ');
+
+		size_t font_size_pos = v.find_first_of("px ");
+		if (font_size_pos != std::string::npos)
+		{
+			size_t space_pos = v.find_last_of(' ', font_size_pos);
+			++space_pos;
+			std::string font_size_str = v.substr(space_pos, font_size_pos - space_pos);
+			unsigned long font_size = strtoul(font_size_str.c_str(), nullptr, 10);
+			cairo_set_font_size(cr, (double)font_size);
+		}
+
+		std::string vlower = v;
+		for (size_t i = 0; i < vlower.size(); ++i)
+		{
+			char ch = vlower[i];
+			if (ch >= 'A' && ch <= 'Z')
+				vlower[i] = tolower(ch);
+		}
+
+		cairo_font_slant_t slant = CAIRO_FONT_SLANT_NORMAL;
+		if (vlower.find("italic ") != std::string::npos)
+			slant = CAIRO_FONT_SLANT_ITALIC;
+
+		cairo_font_weight_t weight = CAIRO_FONT_WEIGHT_NORMAL;
+		if (vlower.find("bold ") != std::string::npos)
+			weight = CAIRO_FONT_WEIGHT_BOLD;
+
+		size_t font_pos = v.find_first_of(' ', font_size_pos+1);
 		if (font_pos != std::string::npos)
 		{
 			std::string font_str = v.substr(font_pos + 1);
 
 			cairo_select_font_face(cr, font_str.c_str(),
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
+				slant,
+				weight);
 		}
 		else
 		{
 			cairo_select_font_face(cr, value,
-				CAIRO_FONT_SLANT_NORMAL,
-				CAIRO_FONT_WEIGHT_NORMAL);
+				slant,
+				weight);
 		}
 
-		size_t font_size_pos = v.find_first_of("px");
-		if (font_size_pos != std::string::npos)
-		{
-			std::string font_size_str = v.substr(0, font_size_pos);
-			unsigned long font_size = strtoul(font_size_str.c_str(), nullptr, 10);
-			cairo_set_font_size(cr, (double)font_size);
-		}
 	}
 	class FontProperty
 	{
