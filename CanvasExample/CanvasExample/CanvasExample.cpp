@@ -379,11 +379,11 @@ void shadowFillBlur()
 int main()
 {
 	//displayText();
-	displayItalicText();
+	//displayItalicText();
 	//displayTextOutline();
 	//displayImage();
 	//drawLine();
-	//drawBezier();
+	drawBezier();
 	//drawQuadraticCurve();
 	//clearRect();
 	//rotateRect();
