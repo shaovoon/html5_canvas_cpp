@@ -368,7 +368,7 @@ void shadowFillBlur()
 	ctx.shadowBlur = 10;
 	ctx.shadowOffsetX = 10;
 	ctx.shadowOffsetY = 10;
-	ctx.shadowColor = "rgba(0,0,0,1.0)";
+	ctx.shadowColor = "rgba(0,0,0,0.5)";
 	ctx.fillStyle = "red";
 	ctx.rect(20, 20, 100, 80);
 	ctx.fill();
@@ -383,7 +383,7 @@ int main()
 	//displayTextOutline();
 	//displayImage();
 	//drawLine();
-	drawBezier();
+	//drawBezier();
 	//drawQuadraticCurve();
 	//clearRect();
 	//rotateRect();
@@ -396,7 +396,7 @@ int main()
 	//shadowFillArc();
 	//shadowStrokeArc();
 	//radialGradient();
-	//shadowFillBlur();
+	shadowFillBlur();
 
 	std::cout << "Done!\n";
 }

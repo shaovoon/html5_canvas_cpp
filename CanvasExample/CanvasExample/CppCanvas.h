@@ -801,7 +801,7 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					applySimpleBlur(shadowBlur, src_pixel);
+					applyBoxBlur(shadowBlur, src_pixel);
 
 					applyShadow(src_pixel, dest_pixel);
 
@@ -876,7 +876,7 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					applySimpleBlur(shadowBlur, src_pixel);
+					applyBoxBlur(shadowBlur, src_pixel);
 
 					applyShadow(src_pixel, dest_pixel);
 
@@ -932,7 +932,7 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					applySimpleBlur(shadowBlur, src_pixel);
+					applyBoxBlur(shadowBlur, src_pixel);
 
 					applyShadow(src_pixel, dest_pixel);
 
@@ -990,7 +990,7 @@ namespace canvas
 
 					unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-					applySimpleBlur(shadowBlur, src_pixel);
+					applyBoxBlur(shadowBlur, src_pixel);
 
 					applyShadow(src_pixel, dest_pixel);
 
@@ -1102,7 +1102,7 @@ namespace canvas
 
 				unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 
-				applySimpleBlur(shadowBlur, src_pixel);
+				applyBoxBlur(shadowBlur, src_pixel);
 
 				applyShadow(src_pixel, dest_pixel);
 
@@ -1142,8 +1142,8 @@ namespace canvas
 
 				unsigned char* src_pixel = cairo_image_surface_get_data(mask_surface);
 				
-				//applySimpleBlur(shadowBlur, src_pixel);
-				applyGaussianBlur(shadowBlur, src_pixel);
+				applyBoxBlur(shadowBlur, src_pixel);
+				//applyGaussianBlur(shadowBlur, src_pixel);
 
 				applyShadow(src_pixel, dest_pixel);
 
@@ -1385,7 +1385,7 @@ namespace canvas
 
 			return val;
 		}
-		void applySimpleBlur(int blur_cnt, unsigned char* orig_src)
+		void applyBoxBlur(int blur_cnt, unsigned char* orig_src)
 		{
 			if (blur_cnt <= 0)
 				return;
@@ -1412,18 +1412,20 @@ namespace canvas
 								int filter_index = (k + 1) * 3 + (j + 1);
 								if (filter_index < 0 || filter_index >= 9)
 									continue;
+								if ((y + j) < 0 || (y + j) >= m_Height)
+									continue;
+								if ((x + k) < 0 || (x + k) >= m_Width)
+									continue;
+
 								int src_index = ((y + j) * m_Width + (x + k)) * 4;
 								if (src_index < 0 || src_index >= total_size)
 									continue;
 
-								total += filter[filter_index] * (src[src_index] / 255.0);
+								total += filter[filter_index] * src[src_index];
 							}
 						}
 						int index = (y * m_Width + x) * 4;
-						dest[index] = clamp(total * 255.0, 0, 255);
-						dest[index + 1] = dest[index + 1];
-						dest[index + 2] = dest[index + 2];
-						dest[index + 3] = dest[index + 3];
+						dest[index] = clamp(total, 0, 255);
 					}
 				}
 				// swap
@@ -1485,17 +1487,18 @@ namespace canvas
 								int filter_index = (k + 3) * 7 + (j + 3);
 								if (filter_index < 0 || filter_index >= 49)
 									continue;
+								if ((y + j) < 0 || (y + j) >= m_Height)
+									continue;
+								if ((x + k) < 0 || (x + k) >= m_Width)
+									continue;
 								int src_index = ((y + j) * m_Width + (x + k)) * 4;
 								if (src_index < 0 || src_index >= total_size)
 									continue;
-								total += filter[filter_index] * (src[src_index] / 255.0);
+								total += filter[filter_index] * src[src_index];
 							}
 						}
 						int index = (y * m_Width + x) * 4;
-						dest[index] = clamp(total * 255.0, 0, 255);
-						dest[index + 1] = dest[index + 1];
-						dest[index + 2] = dest[index + 2];
-						dest[index + 3] = dest[index + 3];
+						dest[index] = clamp(total, 0, 255);
 					}
 				}
 				// swap
