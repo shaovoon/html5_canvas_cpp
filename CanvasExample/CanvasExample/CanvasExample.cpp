@@ -384,7 +384,7 @@ int main()
 	//displayImage();
 	//drawLine();
 	//drawBezier();
-	//drawQuadraticCurve();
+	drawQuadraticCurve();
 	//clearRect();
 	//rotateRect();
 	//saveRestore();
@@ -396,7 +396,7 @@ int main()
 	//shadowFillArc();
 	//shadowStrokeArc();
 	//radialGradient();
-	shadowFillBlur();
+	//shadowFillBlur();
 
 	std::cout << "Done!\n";
 }

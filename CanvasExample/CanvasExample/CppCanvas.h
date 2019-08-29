@@ -1048,7 +1048,7 @@ namespace canvas
 				cp2x, cp2y,
 				endx, endy);
 		}
-
+		/*
 		void quadraticCurveTo(double cpx, double cpy, double endx, double endy)
 		{
 			double x[3];
@@ -1061,6 +1061,31 @@ namespace canvas
 			double xu = 0.0, yu = 0.0, u = 0.0;
 			int i = 0;
 			for (u = 0.0; u <= 1.0; u += 0.0001)
+			{
+				xu = pow(1 - u, 2) * x[0] + 2 * (1 - u) * u * x[1] + (u * u) * x[2];
+				yu = pow(1 - u, 2) * y[0] + 2 * (1 - u) * u * y[1] + (u * u) * y[2];
+
+				cairo_line_to(cr, xu, yu);
+			}
+		}
+		*/
+		void quadraticCurveTo(double cpx, double cpy, double endx, double endy)
+		{
+			double x[3];
+			double y[3];
+			cairo_get_current_point(cr, &x[0], &y[0]);
+			x[1] = cpx;
+			x[2] = endx;
+			y[1] = cpy;
+			y[2] = endy;
+
+			double hyp1 = hypotenuse(x[0], y[0], x[1], y[1]);
+			double hyp2 = hypotenuse(x[1], y[1], x[2], y[2]);
+			double inc_step = 1.0 / (hyp1 + hyp2);
+
+			double xu = 0.0, yu = 0.0, u = 0.0;
+			int i = 0;
+			for (u = 0.0; u <= 1.0; u += inc_step)
 			{
 				xu = pow(1 - u, 2) * x[0] + 2 * (1 - u) * u * x[1] + (u * u) * x[2];
 				yu = pow(1 - u, 2) * y[0] + 2 * (1 - u) * u * y[1] + (u * u) * y[2];
@@ -1375,6 +1400,14 @@ namespace canvas
 		// remove copy constructor and assignment operator
 		Canvas(const Canvas& other) = delete;
 		void operator=(const Canvas& other) = delete;
+
+
+		double hypotenuse(double x1, double y1, double x2, double y2)
+		{
+			double x = x1 - x2;
+			double y = y1 - y2;
+			return sqrt((x * x) + (y * y));
+		}
 
 		unsigned char clamp(double val, int minimum, int maximum)
 		{
